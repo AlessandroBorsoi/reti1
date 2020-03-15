@@ -10,7 +10,6 @@ const char MESSAGE[] = "Hello UPO student!\n";
 
 int main(int argc, char *argv[])
 {
-
     int simpleSocket = 0;
     int simplePort = 0;
     int returnStatus = 0;

@@ -6,7 +6,7 @@ LIST=$(addprefix $(BIN)/, $(PROG))
 
 all: $(BIN) $(LIST)
 
-$(BIN)/%:  $(SOURCE)%.c
+$(BIN)/%: $(SOURCE)%.c
 	$(CC) $(INC) $< $(CFLAGS) -o $@ $(LIBS)
 
 $(BIN):
