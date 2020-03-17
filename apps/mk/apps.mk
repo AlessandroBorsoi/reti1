@@ -1,0 +1,1 @@
+apps_targets += server client

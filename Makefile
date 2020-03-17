@@ -1,16 +1,22 @@
-CFLAGS+=-Wall -Wextra -std=c11 -pedantic -g
-SOURCE=./
-BIN=./bin
-PROG=client server
-LIST=$(addprefix $(BIN)/, $(PROG))
+CC=gcc
+CFLAGS+=-Wall -Wextra -std=c11 -pedantic -g -I"$(PWD)/include"
+export CC
+export CFLAGS
 
-all: $(BIN) $(LIST)
+.PHONY: all bin apps clean test
 
-$(BIN)/%: $(SOURCE)%.c
-	$(CC) $(INC) $< $(CFLAGS) -o $@ $(LIBS)
+all: bin test apps
 
-$(BIN):
-	mkdir $(BIN)
+bin:
+	cd bin && $(MAKE) all
+
+apps:
+	cd apps && $(MAKE) all
+
+test: bin
+	cd test && $(MAKE) all
 
 clean:
-	$(RM) -r $(BIN)
+	cd bin && $(MAKE) clean
+	cd apps && $(MAKE) clean
+	cd test && $(MAKE) clean
