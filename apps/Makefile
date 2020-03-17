@@ -14,4 +14,4 @@ include mk/*.mk
 all: $(apps_targets)
 
 clean:
-	$(RM) $(apps_targets) *.o
+	$(RM) -rf $(apps_targets) *.o *.dSYM

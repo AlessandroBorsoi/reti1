@@ -10,4 +10,4 @@ static: $(bin_objects)
 	$(AR) rcs libupocomputernetworks_s.a $^
 
 clean:
-	$(RM) $(bin_objects) *.so *.a
+	$(RM) -rf $(bin_objects) *.so *.a *.dSYM
