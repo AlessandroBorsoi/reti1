@@ -6,14 +6,42 @@
 #include <string.h>
 #include <unistd.h>
 
+#define MAX 512
+
 const char MESSAGE[] = "Hello UPO student!\n";
+
+void func(int sockfd) 
+{ 
+    char buff[MAX]; 
+    int n; 
+    // infinite loop for chat 
+    for (;;) { 
+        bzero(buff, MAX); 
+  
+        // read the message from client and copy it in buffer 
+        read(sockfd, buff, sizeof(buff)); 
+        // print buffer which contains the client contents 
+        printf("From client: %s\t To client : ", buff); 
+        bzero(buff, MAX); 
+        n = 0; 
+        // copy server message in the buffer 
+        while ((buff[n++] = getchar()) != '\n') 
+            ; 
+  
+        // and send that buffer to client 
+        write(sockfd, buff, sizeof(buff)); 
+  
+        // if msg contains "Exit" then server exit and chat ended. 
+        if (strncmp("exit", buff, 4) == 0) { 
+            printf("Server Exit...\n"); 
+            break; 
+        } 
+    } 
+}
 
 int main(int argc, char *argv[])
 {
-    int simpleSocket = 0;
-    int simplePort = 0;
-    int returnStatus = 0;
-    struct sockaddr_in simpleServer;
+    struct sockaddr_in serverAddress;
 
     if (2 != argc)
     {
@@ -21,9 +49,9 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    simpleSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    int serverSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
-    if (simpleSocket == -1)
+    if (serverSocket < 0)
     {
         fprintf(stderr, "Could not create a socket!\n");
         exit(1);
@@ -34,62 +62,56 @@ int main(int argc, char *argv[])
     }
 
     /* retrieve the port number for listening */
-    simplePort = atoi(argv[1]);
+    int port = atoi(argv[1]);
 
     /* setup the address structure */
     /* use INADDR_ANY to bind to all local addresses  */
-    memset(&simpleServer, '\0', sizeof(simpleServer));
-    simpleServer.sin_family = AF_INET;
-    simpleServer.sin_addr.s_addr = htonl(INADDR_ANY);
-    simpleServer.sin_port = htons(simplePort);
+    memset(&serverAddress, '\0', sizeof(serverAddress));
+    serverAddress.sin_family = AF_INET;
+    serverAddress.sin_addr.s_addr = htonl(INADDR_ANY);
+    serverAddress.sin_port = htons(port);
 
     /*  bind to the address and port with our socket  */
-    returnStatus = bind(simpleSocket, (struct sockaddr *)&simpleServer, sizeof(simpleServer));
+    int bindStatus = bind(serverSocket, (struct sockaddr *)&serverAddress, sizeof(serverAddress));
 
-    if (returnStatus == 0)
+    if (bindStatus < 0)
     {
-        fprintf(stderr, "Bind completed!\n");
+        fprintf(stderr, "Could not bind to address!\n");
+        close(serverSocket);
+        exit(1);
     }
     else
     {
-        fprintf(stderr, "Could not bind to address!\n");
-        close(simpleSocket);
-        exit(1);
+        fprintf(stderr, "Bind completed!\n");
     }
 
     /* lets listen on the socket for connections      */
-    returnStatus = listen(simpleSocket, 5);
+    int listenStatus = listen(serverSocket, 5);
 
-    if (returnStatus == -1)
+    if (listenStatus == -1)
     {
         fprintf(stderr, "Cannot listen on socket!\n");
-        close(simpleSocket);
+        close(serverSocket);
         exit(1);
     }
 
-    while (1)
+    struct sockaddr_in clientAddress = {0};
+    socklen_t clientAddressLength = sizeof(clientAddress);
+
+    /* wait here */
+
+    int childSocket = accept(serverSocket, (struct sockaddr *)&clientAddress, &clientAddressLength);
+
+    if (childSocket == -1)
     {
-        struct sockaddr_in clientName = {0};
-        int simpleChildSocket = 0;
-        int clientNameLength = sizeof(clientName);
-
-        /* wait here */
-
-        simpleChildSocket = accept(simpleSocket, (struct sockaddr *)&clientName, &clientNameLength);
-
-        if (simpleChildSocket == -1)
-        {
-            fprintf(stderr, "Cannot accept connections!\n");
-            close(simpleSocket);
-            exit(1);
-        }
-
-        /* handle the new connection request  */
-        /* write out our message to the client */
-        write(simpleChildSocket, MESSAGE, strlen(MESSAGE));
-        close(simpleChildSocket);
+        fprintf(stderr, "Cannot accept connections!\n");
+        close(serverSocket);
+        exit(1);
     }
 
-    close(simpleSocket);
+    func(childSocket); 
+    close(childSocket);
+
+    close(serverSocket);
     return 0;
 }

@@ -7,13 +7,32 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 
+#define MAX 512
+
+void func(int sockfd) 
+{ 
+    char buff[MAX]; 
+    int n; 
+    for (;;) { 
+        bzero(buff, sizeof(buff)); 
+        printf("Enter the string : "); 
+        n = 0; 
+        while ((buff[n++] = getchar()) != '\n') 
+            ; 
+        write(sockfd, buff, sizeof(buff)); 
+        bzero(buff, sizeof(buff)); 
+        read(sockfd, buff, sizeof(buff)); 
+        printf("From Server : %s", buff); 
+        if ((strncmp(buff, "exit", 4)) == 0) { 
+            printf("Client Exit...\n"); 
+            break; 
+        } 
+    } 
+} 
+
 int main(int argc, char *argv[])
 {
-    int simpleSocket = 0;
-    int simplePort = 0;
-    int returnStatus = 0;
-    char buffer[256] = "";
-    struct sockaddr_in simpleServer;
+    struct sockaddr_in serverAddress;
 
     if (3 != argc)
     {
@@ -22,9 +41,9 @@ int main(int argc, char *argv[])
     }
 
     /* create a streaming socket      */
-    simpleSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    int clientSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
-    if (simpleSocket == -1)
+    if (clientSocket == -1)
     {
         fprintf(stderr, "Could not create a socket!\n");
         exit(1);
@@ -35,43 +54,32 @@ int main(int argc, char *argv[])
     }
 
     /* retrieve the port number for connecting */
-    simplePort = atoi(argv[2]);
+    int port = atoi(argv[2]);
 
     /* setup the address structure */
     /* use the IP address sent as an argument for the server address  */
     //bzero(&simpleServer, sizeof(simpleServer));
-    memset(&simpleServer, '\0', sizeof(simpleServer));
-    simpleServer.sin_family = AF_INET;
+    memset(&serverAddress, '\0', sizeof(serverAddress));
+    serverAddress.sin_family = AF_INET;
     //inet_addr(argv[2], &simpleServer.sin_addr.s_addr);
-    simpleServer.sin_addr.s_addr = inet_addr(argv[1]);
-    simpleServer.sin_port = htons(simplePort);
+    serverAddress.sin_addr.s_addr = inet_addr(argv[1]);
+    serverAddress.sin_port = htons(port);
 
     /*  connect to the address and port with our socket  */
-    returnStatus = connect(simpleSocket, (struct sockaddr *)&simpleServer, sizeof(simpleServer));
+    int connectStatus = connect(clientSocket, (struct sockaddr *)&serverAddress, sizeof(serverAddress));
 
-    if (returnStatus == 0)
+    if (connectStatus == 0)
     {
         fprintf(stderr, "Connect successful!\n");
     }
     else
     {
         fprintf(stderr, "Could not connect to address!\n");
-        close(simpleSocket);
+        close(clientSocket);
         exit(1);
     }
 
-    /* get the message from the server   */
-    returnStatus = read(simpleSocket, buffer, sizeof(buffer));
-
-    if (returnStatus > 0)
-    {
-        printf("%d: %s", returnStatus, buffer);
-    }
-    else
-    {
-        fprintf(stderr, "Return Status = %d \n", returnStatus);
-    }
-
-    close(simpleSocket);
+    func(clientSocket);
+    close(clientSocket);
     return 0;
 }
