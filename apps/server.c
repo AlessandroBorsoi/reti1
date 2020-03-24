@@ -11,7 +11,60 @@
 
 #define MAX 512
 
-const char MESSAGE[] = "OK START Benvenuto, mandami i tuoi dati\n";
+typedef struct hist_s
+{
+    int hist[62];
+} hist_t;
+
+void insert(hist_t *hist, char **words, int wordNumber)
+{
+    for (int i = 0; i < wordNumber; i++)
+    {
+        for (size_t j = 0; j < strlen(words[i]); j++)
+        {
+            char c = words[i][j];
+            if (isdigit(c))
+            {
+                hist->hist[c - '0']++;
+            }
+            else if (isupper(c))
+            {
+                hist->hist[c - 'A' + 10]++;
+            }
+            else if (islower(c))
+            {
+                hist->hist[c - 'a' + 36]++;
+            }
+        }
+    }
+}
+
+char *printHist(hist_t *hist)
+{
+    int pos = 0;
+    char *res = calloc(500, sizeof(char));
+    for (int i = 0; i < 10; i++)
+    {
+        char number = hist->hist[i];
+        if (number > 0)
+            pos += sprintf(&res[pos], "%c:%d ", i + '0', number);
+    }
+    for (int i = 0; i < 26; i++)
+    {
+        char number = hist->hist[i + 10];
+        if (number > 0)
+            pos += sprintf(&res[pos], "%c:%d ", i + 'A', number);
+    }
+    for (int i = 0; i < 26; i++)
+    {
+        char number = hist->hist[i + 36];
+        if (number > 0)
+            pos += sprintf(&res[pos], "%c:%d ", i + 'a', number);
+    }
+    return res;
+}
+
+const char *MESSAGE = "OK START Benvenuto, mandami i tuoi dati\n";
 
 void print(wordexp_t *message)
 {
@@ -41,9 +94,9 @@ int countAlphanum(char **words, int wordNumber)
 void func(int socket)
 {
     char input[MAX];
-    int n;
     write(socket, MESSAGE, sizeof(MESSAGE));
     // infinite loop for chat
+    hist_t hist;
     while (1)
     {
         wordexp_t message;
@@ -55,28 +108,28 @@ void func(int socket)
         switch (wordexp(strtok(input, "\n"), &message, 0))
         {
         case 0: /* Successful.  */
-            printf("Success");
             break;
         case WRDE_NOSPACE:
-            printf("WRDE_NOSPACE");
+            printf("WRDE_NOSPACE\n");
             wordfree(&message);
+            return;
         case WRDE_BADCHAR:
-            printf("WRDE_BADCHAR");
+            printf("WRDE_BADCHAR\n");
             break;
         case WRDE_BADVAL:
-            printf("WRDE_BADVAL");
+            printf("WRDE_BADVAL\n");
             break;
         case WRDE_CMDSUB:
-            printf("WRDE_CMDSUB");
+            printf("WRDE_CMDSUB\n");
             break;
         case WRDE_SYNTAX:
-            printf("WRDE_SYNTAX");
+            printf("WRDE_SYNTAX\n");
             break;
         default:
-            printf("Error");
+            printf("Error\n");
+            wordfree(&message);
             return;
         }
-        print(&message);
         if (!isValidCommandType(&message))
         {
             char *err = "ERR SYNTAX Comando non valido\n";
@@ -117,25 +170,28 @@ void func(int socket)
                 snprintf(ok, 12, "OK TEXT %d\n", number);
                 write(socket, ok, sizeof(ok));
             }
+            insert(&hist, &message.we_wordv[1], message.we_wordc - 2);
         }
         else if (strcmp(command, "HIST") == 0)
         {
+            char *res = printHist(&hist);
+            write(socket, res, sizeof(res));
+            free(res);
         }
-        else if (strcmp(command, "QUIT") == 0)
+        else if (strcmp(command, "EXIT") == 0)
         {
+            char *res = printHist(&hist);
+            write(socket, res, sizeof(res));
+            free(res);
+            wordfree(&message);
+            return;
         }
         else
         {
+            wordfree(&message);
+            return;
         }
 
-        bzero(input, MAX);
-        n = 0;
-        // copy server message in the buffer
-        while ((input[n++] = getchar()) != '\n')
-            ;
-
-        // and send that buffer to client
-        write(socket, input, sizeof(input));
         wordfree(&message);
     }
 }
@@ -196,21 +252,23 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    struct sockaddr_in clientAddress = {0};
-    socklen_t clientAddressLength = sizeof(clientAddress);
-
-    int childSocket = accept(serverSocket, (struct sockaddr *)&clientAddress, &clientAddressLength);
-
-    if (childSocket == -1)
+    while (1)
     {
-        fprintf(stderr, "Cannot accept connections!\n");
-        close(serverSocket);
-        exit(1);
+        struct sockaddr_in clientAddress = {0};
+        socklen_t clientAddressLength = sizeof(clientAddress);
+
+        int childSocket = accept(serverSocket, (struct sockaddr *)&clientAddress, &clientAddressLength);
+
+        if (childSocket == -1)
+        {
+            fprintf(stderr, "Cannot accept connections!\n");
+            close(serverSocket);
+            exit(1);
+        }
+
+        func(childSocket);
+        close(childSocket);
     }
-
-    func(childSocket);
-    close(childSocket);
-
     close(serverSocket);
     return 0;
 }
