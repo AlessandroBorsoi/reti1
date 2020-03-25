@@ -13,51 +13,54 @@
 
 typedef struct hist_s
 {
-    int hist[62];
+    unsigned int digits[10];
+    unsigned int uppers[26];
+    unsigned int lowers[26];
 } hist_t;
 
-void insert(hist_t *hist, char **words, int wordNumber)
+void insert(hist_t *hist, char **wordsv, int wordsc)
 {
-    for (int i = 0; i < wordNumber; i++)
+    for (int i = 0; i < wordsc; i++)
     {
-        for (size_t j = 0; j < strlen(words[i]); j++)
+        for (size_t j = 0; j < strlen(wordsv[i]); j++)
         {
-            char c = words[i][j];
+            char c = wordsv[i][j];
             if (isdigit(c))
             {
-                hist->hist[c - '0']++;
+                hist->digits[c - '0']++;
             }
             else if (isupper(c))
             {
-                hist->hist[c - 'A' + 10]++;
+                hist->uppers[c - 'A']++;
             }
             else if (islower(c))
             {
-                hist->hist[c - 'a' + 36]++;
+                hist->lowers[c - 'a']++;
             }
         }
     }
 }
 
-char *printHist(hist_t *hist)
+char *toString(hist_t *hist)
 {
     int pos = 0;
     char *res = calloc(500, sizeof(char));
+    char number = 0;
     for (int i = 0; i < 10; i++)
     {
-        char number = hist->hist[i];
+        number = hist->digits[i];
         if (number > 0)
             pos += sprintf(&res[pos], "%c:%d ", i + '0', number);
     }
     for (int i = 0; i < 26; i++)
     {
-        char number = hist->hist[i + 10];
+        number = hist->uppers[i];
         if (number > 0)
             pos += sprintf(&res[pos], "%c:%d ", i + 'A', number);
     }
     for (int i = 0; i < 26; i++)
     {
-        char number = hist->hist[i + 36];
+        number = hist->lowers[i];
         if (number > 0)
             pos += sprintf(&res[pos], "%c:%d ", i + 'a', number);
     }
@@ -96,7 +99,7 @@ void func(int socket)
     char input[MAX];
     write(socket, MESSAGE, sizeof(MESSAGE));
     // infinite loop for chat
-    hist_t hist;
+    hist_t hist = {0};
     while (1)
     {
         wordexp_t message;
@@ -174,20 +177,28 @@ void func(int socket)
         }
         else if (strcmp(command, "HIST") == 0)
         {
-            char *res = printHist(&hist);
-            write(socket, res, sizeof(res));
+            char ok[MAX];
+            char *res = toString(&hist);
+            snprintf(ok, MAX, "OK HIST %s\n", res);
+            write(socket, ok, sizeof(ok));
             free(res);
         }
         else if (strcmp(command, "EXIT") == 0)
         {
-            char *res = printHist(&hist);
-            write(socket, res, sizeof(res));
+            char ok[MAX];
+            char *res = toString(&hist);
+            snprintf(ok, MAX, "OK HIST %s\n", res);
+            write(socket, ok, sizeof(ok));
+            char *exit = "OK EXIT Arrivederci\n";
+            write(socket, exit, sizeof(exit));
             free(res);
             wordfree(&message);
             return;
         }
         else
         {
+            char *quit = "OK QUIT Arrivederci\n";
+            write(socket, quit, sizeof(quit));
             wordfree(&message);
             return;
         }
