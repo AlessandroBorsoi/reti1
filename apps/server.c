@@ -67,7 +67,7 @@ char *toString(hist_t *hist)
     return res;
 }
 
-const char *MESSAGE = "OK START Benvenuto, mandami i tuoi dati\n";
+const char MESSAGE[] = "OK START Benvenuto, mandami i tuoi dati\n";
 
 void print(wordexp_t *message)
 {
@@ -98,19 +98,17 @@ void func(int socket)
 {
     char input[MAX];
     write(socket, MESSAGE, sizeof(MESSAGE));
-    // infinite loop for chat
     hist_t hist = {0};
     while (1)
     {
         wordexp_t message;
         bzero(input, MAX);
-
-        // read the message from client and copy it in buffer
         read(socket, input, sizeof(input));
-
-        switch (wordexp(strtok(input, "\n"), &message, 0))
+        if (strcmp(input, "\n") == 0) continue;
+        char *mex = strtok(input, "\n"); // TODO: fix segmentation fault when the input is only the \n
+        switch (wordexp(mex, &message, 0))
         {
-        case 0: /* Successful.  */
+        case 0:
             break;
         case WRDE_NOSPACE:
             printf("WRDE_NOSPACE\n");
@@ -135,7 +133,7 @@ void func(int socket)
         }
         if (!isValidCommandType(&message))
         {
-            char *err = "ERR SYNTAX Comando non valido\n";
+            char err[] = "ERR SYNTAX Comando non valido\n";
             write(socket, err, sizeof(err));
             wordfree(&message);
             close(socket);
@@ -146,7 +144,7 @@ void func(int socket)
         {
             if (message.we_wordc < 3)
             {
-                char *err = "ERR TEXT Comando non valido\n";
+                char err[] = "ERR TEXT Comando non valido\n";
                 write(socket, err, sizeof(err));
                 wordfree(&message);
                 return;
@@ -154,7 +152,7 @@ void func(int socket)
             int number = atoi(message.we_wordv[message.we_wordc - 1]);
             if (number == 0)
             {
-                char *err = "ERR TEXT Comando non valido\n";
+                char err[] = "ERR TEXT Comando non valido\n";
                 write(socket, err, sizeof(err));
                 wordfree(&message);
                 return;
@@ -162,7 +160,7 @@ void func(int socket)
             int charCount = countAlphanum(&message.we_wordv[1], message.we_wordc - 2);
             if (number != charCount)
             {
-                char *err = "ERR TEXT Count non valido\n";
+                char err[] = "ERR TEXT Count non valido\n";
                 write(socket, err, sizeof(err));
                 wordfree(&message);
                 return;
@@ -189,7 +187,7 @@ void func(int socket)
             char *res = toString(&hist);
             snprintf(ok, MAX, "OK HIST %s\n", res);
             write(socket, ok, sizeof(ok));
-            char *exit = "OK EXIT Arrivederci\n";
+            char exit[] = "OK EXIT Arrivederci\n";
             write(socket, exit, sizeof(exit));
             free(res);
             wordfree(&message);
