@@ -12,8 +12,46 @@
 
 const char WELCOME[] = "OK START Benvenuto, mandami i tuoi dati\n";
 
+typedef struct upo_list_s
+{
+    uint64_t list[100];
+    uint64_t size;
+} upo_list_t;
+
+void upo_list_add(upo_list_t *list, uint64_t number)
+{
+    list->list[list->size] = number;
+    list->size++;
+}
+
+uint64_t upo_list_size(upo_list_t *list)
+{
+    return list->size;
+}
+
+double upo_list_avg(upo_list_t *list)
+{
+    if (list->size == 0)
+        return 0;
+    else
+    {
+        uint64_t sum = 0;
+        for (uint64_t i = 0; i < list->size; i++)
+        {
+            sum += list->list[i];
+        }
+        return sum / (double)list->size;
+    }
+}
+
+double upo_list_variance(upo_list_t *list)
+{
+    return list->size;
+}
+
 void program(int socket)
 {
+    upo_list_t upo_list = {{0}, 0};
     char input[MAX];
     write(socket, WELCOME, sizeof(WELCOME));
     while (1)
@@ -27,7 +65,32 @@ void program(int socket)
             close(socket);
             return;
         }
-        return;
+
+        char *ptr;
+        char *token = strtok(input, " ");
+        uint64_t size = strtoul(token, &ptr, 10);
+        if (size == 0)
+        {
+            char ok[100] = {0};
+            snprintf(ok, 100, "OK STATS %llu %f\n", upo_list_size(&upo_list), upo_list_avg(&upo_list));
+            write(socket, ok, sizeof(ok));
+            close(socket);
+            return;
+        }
+        uint64_t numbers[size];
+        int i = 0;
+        while (token != NULL)
+        {
+            token = strtok(NULL, " ");
+            if (token != NULL)
+            {
+                numbers[i] = strtoul(token, &ptr, 10);
+                i++;
+            }
+        }
+
+        for (uint64_t i = 0; i < size; i++)
+            upo_list_add(&upo_list, numbers[i]);
     }
 }
 
