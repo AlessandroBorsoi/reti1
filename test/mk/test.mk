@@ -1,1 +1,1 @@
-test_targets += 
+test_targets += test_store

@@ -1,5 +1,5 @@
 LDFLAGS+=-L../bin
-#LDLIBS=-lupoalglib_s -lm
+LDLIBS=-lupocomputernetworks_s -lm
 test_targets=
 
 export LDFLAGS

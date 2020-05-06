@@ -7,51 +7,15 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <upo/store.h>
 
 #define MAX 512
 
 const char WELCOME[] = "OK START Benvenuto, mandami i tuoi dati\n";
 
-typedef struct upo_list_s
-{
-    uint64_t list[100];
-    uint64_t size;
-} upo_list_t;
-
-void upo_list_add(upo_list_t *list, uint64_t number)
-{
-    list->list[list->size] = number;
-    list->size++;
-}
-
-uint64_t upo_list_size(upo_list_t *list)
-{
-    return list->size;
-}
-
-double upo_list_avg(upo_list_t *list)
-{
-    if (list->size == 0)
-        return 0;
-    else
-    {
-        uint64_t sum = 0;
-        for (uint64_t i = 0; i < list->size; i++)
-        {
-            sum += list->list[i];
-        }
-        return sum / (double)list->size;
-    }
-}
-
-double upo_list_variance(upo_list_t *list)
-{
-    return list->size;
-}
-
 void program(int socket)
 {
-    upo_list_t upo_list = {{0}, 0};
+    upo_store_t store = upo_store_create();
     char input[MAX];
     write(socket, WELCOME, sizeof(WELCOME));
     while (1)
@@ -63,6 +27,7 @@ void program(int socket)
             char err[] = "ERR SYNTAX Comando non valido\n";
             write(socket, err, sizeof(err));
             close(socket);
+            upo_store_destroy(store);
             return;
         }
 
@@ -72,9 +37,10 @@ void program(int socket)
         if (size == 0)
         {
             char ok[100] = {0};
-            snprintf(ok, 100, "OK STATS %llu %f\n", upo_list_size(&upo_list), upo_list_avg(&upo_list));
+            snprintf(ok, 100, "OK STATS %zu %f %f\n", upo_store_size(store), upo_store_avg(store), upo_store_variance(store));
             write(socket, ok, sizeof(ok));
             close(socket);
+            upo_store_destroy(store);
             return;
         }
         uint64_t numbers[size];
@@ -90,8 +56,9 @@ void program(int socket)
         }
 
         for (uint64_t i = 0; i < size; i++)
-            upo_list_add(&upo_list, numbers[i]);
+            upo_store_insert(store, numbers[i]);
     }
+    upo_store_destroy(store);
 }
 
 int main(int argc, char *argv[])
