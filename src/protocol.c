@@ -1,20 +1,53 @@
 #include <string.h>
+#include <errno.h>
+#include <stdlib.h>
 #include <upo/protocol.h>
 
 upo_protocol_response_t upo_protocol(upo_store_t store, const char *input, char *output)
 {
-    strcpy(output, "ERR SYNTAX Messaggio vuoto\n");
-    return ERR_SYNTAX;
+    char input_copy[UPO_PROTOCOL_MAX];
+    strcpy(input_copy, input);
+
+    char delim[] = " ";
+    char *token = strtok(input_copy, delim);
+
+    if (token == NULL || strcmp(token, "\n") == 0)
+    {
+        strcpy(output, "ERR SYNTAX Messaggio vuoto\n");
+        return ERR_SYNTAX;
+    }
+
+    char *endptr = NULL;
+    uint64_t size = strtoul(token, &endptr, 10);
+    if (token == endptr || errno != 0)
+    {
+        strcpy(output, "ERR SYNTAX Numero non valido\n");
+        return ERR_SYNTAX;
+    }
+
+    uint64_t i = 0;
+    while (token != NULL && i < size)
+    {
+        token = strtok(NULL, delim);
+        uint64_t data = strtoul(token, &endptr, 10);
+        if (token == endptr || errno != 0)
+        {
+            strcpy(output, "ERR SYNTAX Numero non valido\n");
+            return ERR_SYNTAX;
+        }
+        upo_store_insert(store, data);
+        i++;    
+    }
+    if (strcmp(token, "\n") != 0)
+    {
+        strcpy(output, "ERR SYNTAX Mancanza del carattere di terminazione\n");
+        return ERR_SYNTAX;
+    }
+
+    strcpy(output, "TODO\n");
+    return OK_DATA;
 }
 
-// if (false)
-// {
-//     char err[] = "ERR SYNTAX Comando non valido\n";
-//     write(socket, err, sizeof(err));
-//     close(socket);
-//     upo_store_destroy(store);
-//     return;
-// }
 // char *ptr;
 // char *token = strtok(input, " ");
 // uint64_t size = strtoul(token, &ptr, 10);
