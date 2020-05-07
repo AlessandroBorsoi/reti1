@@ -26,9 +26,6 @@ O: ERR SYNTAX Numero non valido\n
 I: 2 1 3
 O: ERR SYNTAX Mancanza del carattere di terminazione\n
 
-I: \n
-O: ERR SYNTAX Messaggio vuoto\n
-
 I: 2 1 3 4\n
 O: ERR DATA Il numero di dati immessi non è coerente con la dimensione dichiarata\n
 
@@ -40,11 +37,10 @@ O: ERR DATA Il numero di dati immessi non è coerente con la dimensione dichiara
 */
 #include <assert.h>
 #include <stdio.h>
+#include <string.h>
 #include <upo/protocol.h>
 
-#define MAX 512
-
-static void test_err_syntax();
+static void test_err_syntax_empty_message();
 static void test_err_data();
 static void test_err_stats();
 static void test_ok_data();
@@ -54,7 +50,7 @@ int main()
 {
     printf("Test case 'ERR SYNTAX'... ");
     fflush(stdout);
-    test_err_syntax();
+    test_err_syntax_empty_message();
     printf("OK\n");
 
     printf("Test case 'ERR DATA'... ");
@@ -80,14 +76,21 @@ int main()
     return 0;
 }
 
-void test_err_syntax()
+/*
+I: \n
+O: ERR SYNTAX Messaggio vuoto\n
+*/
+void test_err_syntax_empty_message()
 {
     upo_store_t store = upo_store_create();
     char input[] = "\n";
-    char output[MAX] = {0};
+    char output[UPO_PROTOCOL_MAX] = {0};
     upo_protocol_response_t response = {0};
-    
-    upo_protocol(store, input, output, response);
+
+    upo_protocol(store, input, output, &response);
+
+    assert(strcmp(output, "ERR SYNTAX Messaggio vuoto\n") == 0);
+    assert(response == ERR_SYNTAX);
 
     upo_store_destroy(store);
 }
