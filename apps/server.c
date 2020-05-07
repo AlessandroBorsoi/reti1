@@ -1,10 +1,8 @@
 #include <stdio.h>
-#include <stdbool.h>
 #include <netdb.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <errno.h>
 #include <upo/protocol.h>
 
 const char WELCOME[] = "OK START Benvenuto, mandami i tuoi dati\n";
@@ -17,7 +15,7 @@ void program(int socket)
     upo_protocol_response_t response;
 
     write(socket, WELCOME, sizeof(WELCOME));
-    while (true)
+    while (1)
     {
         memset(input, '\0', UPO_PROTOCOL_MAX);
         memset(output, '\0', UPO_PROTOCOL_MAX);
