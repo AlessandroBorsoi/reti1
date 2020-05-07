@@ -1,11 +1,3 @@
-/*
-I: 2 10 20\n
-O: OK DATA 2\n
-I: 1 12\n
-O: OK DATA 1\n
-I: 0\n
-O: OK STATS 3 14.0 28.0\n
-*/
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
@@ -56,12 +48,12 @@ int main()
 
     printf("Test case 'OK DATA'... ");
     fflush(stdout);
-    test_ok_data();
+    //test_ok_data();
     printf("OK\n");
 
     printf("Test case 'OK STATS'... ");
     fflush(stdout);
-    test_ok_stats();
+    //test_ok_stats();
     printf("OK\n");
 
     return 0;
@@ -310,6 +302,65 @@ void test_err_stats_variance()
     upo_store_destroy(store);
 }
 
-void test_ok_data() {}
+/*
+I: 10 1 2 3 4 5 6 7 8 9 10\n
+O: OK DATA 10\n
+I: 3 1 2 3\n
+O: OK DATA 3\n
+*/
+void test_ok_data()
+{
+    upo_store_t store = upo_store_create();
+    char input[] = "10 1 2 3 4 5 6 7 8 9 10\n";
+    char output[UPO_PROTOCOL_MAX] = {0};
 
-void test_ok_stats() {}
+    upo_protocol_response_t response = upo_protocol(store, input, output);
+
+    assert(strcmp(output, "OK DATA 10\n") == 0);
+    assert(response == OK_DATA);
+
+    char input2[] = "3 1 2 3\n";
+    memset(output, '\0', UPO_PROTOCOL_MAX);
+    response = upo_protocol(store, input2, output);
+
+    assert(strcmp(output, "OK DATA 3\n") == 0);
+    assert(response == OK_DATA);
+
+    upo_store_destroy(store);
+}
+
+/*
+I: 2 10 20\n
+O: OK DATA 2\n
+I: 1 12\n
+O: OK DATA 1\n
+I: 0\n
+O: OK STATS 3 14.0 28.0\n
+*/
+void test_ok_stats()
+{
+    upo_store_t store = upo_store_create();
+    char input[] = "2 10 20\n";
+    char output[UPO_PROTOCOL_MAX] = {0};
+
+    upo_protocol_response_t response = upo_protocol(store, input, output);
+
+    assert(strcmp(output, "OK DATA 2\n") == 0);
+    assert(response == OK_DATA);
+
+    char input2[] = "1 12\n";
+    memset(output, '\0', UPO_PROTOCOL_MAX);
+    response = upo_protocol(store, input2, output);
+
+    assert(strcmp(output, "OK DATA 1\n") == 0);
+    assert(response == OK_DATA);
+
+    char input3[] = "0\n";
+    memset(output, '\0', UPO_PROTOCOL_MAX);
+    response = upo_protocol(store, input3, output);
+
+    assert(strcmp(output, "OK STATS 3 14.0 28.0\n") == 0);
+    assert(response == OK_STATS);
+
+    upo_store_destroy(store);
+}
