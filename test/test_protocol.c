@@ -85,9 +85,8 @@ void test_err_syntax_empty_message()
     upo_store_t store = upo_store_create();
     char input[] = "\n";
     char output[UPO_PROTOCOL_MAX] = {0};
-    upo_protocol_response_t response = {0};
 
-    upo_protocol(store, input, output, &response);
+    upo_protocol_response_t response = upo_protocol(store, input, output);
 
     assert(strcmp(output, "ERR SYNTAX Messaggio vuoto\n") == 0);
     assert(response == ERR_SYNTAX);

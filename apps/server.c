@@ -12,7 +12,6 @@ void program(int socket)
     upo_store_t store = upo_store_create();
     char input[UPO_PROTOCOL_MAX];
     char output[UPO_PROTOCOL_MAX];
-    upo_protocol_response_t response;
 
     write(socket, WELCOME, sizeof(WELCOME));
     while (1)
@@ -20,7 +19,7 @@ void program(int socket)
         memset(input, '\0', UPO_PROTOCOL_MAX);
         memset(output, '\0', UPO_PROTOCOL_MAX);
         read(socket, input, sizeof(input));
-        upo_protocol(store, input, output, &response);
+        upo_protocol_response_t response = upo_protocol(store, input, output);
         write(socket, output, sizeof(output));
         if (response != OK_DATA)
             break;

@@ -1,10 +1,10 @@
 #include <string.h>
 #include <upo/protocol.h>
 
-void upo_protocol(upo_store_t store, const char *input, char *output, upo_protocol_response_t *response)
+upo_protocol_response_t upo_protocol(upo_store_t store, const char *input, char *output)
 {
     strcpy(output, "ERR SYNTAX Messaggio vuoto\n");
-    *response = ERR_SYNTAX;
+    return ERR_SYNTAX;
 }
 
 // if (false)

@@ -9,7 +9,7 @@
 
 #include <upo/store.h>
 
-/** \brief Declares the max size of the messages (input and output) allowed by the protocol */
+/** \brief Define the max size of the messages (input and output) allowed by the protocol */
 #define UPO_PROTOCOL_MAX 512
 
 /** \brief Declares the possible type of output of the protocol */
@@ -27,6 +27,8 @@ typedef enum
  *
  * \param store The store used for the number calculations.
  * \param input The input string.
- * \param output The output.
+ * \param output The output string.
+ * 
+ * \return A upo_protocol_response_t.
  */
-void upo_protocol(upo_store_t store, const char *input, char *output, upo_protocol_response_t *response);
+upo_protocol_response_t upo_protocol(upo_store_t store, const char *input, char *output);
