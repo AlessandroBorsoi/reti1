@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <errno.h>
 #include <upo/store.h>
 
 #define MAX 512
@@ -31,7 +32,7 @@ void program(int socket)
         char *ptr;
         char *token = strtok(input, " ");
         uint64_t size = strtoul(token, &ptr, 10);
-        if (size == 0)
+        if (size == 0 && errno != 0 )
         {
             char ok[100] = {0};
             snprintf(ok, 100, "OK STATS %zu %f %f\n", upo_store_size(store), upo_store_avg(store), upo_store_variance(store));
@@ -41,19 +42,38 @@ void program(int socket)
             return;
         }
         uint64_t numbers[size];
-        int i = 0;
-        while (token != NULL)
+        uint64_t i = 0;
+        while (token != NULL && errno != 0)
         {
             token = strtok(NULL, " ");
             if (token != NULL)
             {
+                if (i == size)
+                {
+                    char err[] = "ERR SYNTAX Comando non valido\n";
+                    write(socket, err, sizeof(err));
+                    close(socket);
+                    upo_store_destroy(store);
+                    return;
+                }
                 numbers[i] = strtoul(token, &ptr, 10);
                 i++;
             }
         }
+        if (i != size || errno == 0)
+        {
+            char err[] = "ERR SYNTAX Comando non valido\n";
+            write(socket, err, sizeof(err));
+            close(socket);
+            upo_store_destroy(store);
+            return;
+        }
 
         for (uint64_t i = 0; i < size; i++)
             upo_store_insert(store, numbers[i]);
+        char ok[100] = {0};
+        snprintf(ok, 100, "OK DATA %llu\n", size);
+        write(socket, ok, sizeof(ok));
     }
     upo_store_destroy(store);
 }

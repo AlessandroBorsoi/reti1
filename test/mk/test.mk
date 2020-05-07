@@ -1,1 +1,1 @@
-test_targets += test_store
+test_targets += test_store test_protocol
