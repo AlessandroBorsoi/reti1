@@ -5,23 +5,6 @@ I: 1 12\n
 O: OK DATA 1\n
 I: 0\n
 O: OK STATS 3 14.0 28.0\n
-
-I: 1 10\n
-O: OK DATA 1\n
-I: 0\n
-O: ERR STATS Non posso calcolare la varianza di 1 campione\n
-
-I: 0\n
-O: ERR STATS Non posso calcolare la media di nessun campione\n
-
-I: 2 1 3 4\n
-O: ERR DATA Il numero di dati immessi non è coerente con la dimensione dichiarata\n
-
-I: 6 1 3 4\n
-O: ERR DATA Il numero di dati immessi non è coerente con la dimensione dichiarata\n
-
-I: 0 1 3\n
-O: ERR DATA Il numero di dati immessi non è coerente con la dimensione dichiarata\n
 */
 #include <assert.h>
 #include <stdio.h>
@@ -36,8 +19,11 @@ static void test_err_syntax_invalid_non_integer_other_number();
 static void test_err_syntax_invalid_non_integer_first_number();
 static void test_err_syntax_invalid_termination_of_number();
 static void test_err_syntax_terminator();
-static void test_err_data();
-static void test_err_stats();
+static void test_err_data_more();
+static void test_err_data_less();
+static void test_err_data_with_zero();
+static void test_err_stats_avg();
+static void test_err_stats_variance();
 static void test_ok_data();
 static void test_ok_stats();
 
@@ -57,12 +43,15 @@ int main()
 
     printf("Test case 'ERR DATA'... ");
     fflush(stdout);
-    test_err_data();
+    //test_err_data_more();
+    //test_err_data_less();
+    //test_err_data_with_zero();
     printf("OK\n");
 
     printf("Test case 'ERR STATS'... ");
     fflush(stdout);
-    test_err_stats();
+    //test_err_stats_avg();
+    //test_err_stats_variance();
     printf("OK\n");
 
     printf("Test case 'OK DATA'... ");
@@ -222,9 +211,104 @@ void test_err_syntax_terminator()
     upo_store_destroy(store);
 }
 
-void test_err_data() {}
+/*
+I: 2 1 3 4\n
+O: ERR DATA Il numero di dati immessi non è coerente con la dimensione dichiarata\n
+*/
+void test_err_data_more()
+{
+    upo_store_t store = upo_store_create();
+    char input[] = "2 1 3 4\n";
+    char output[UPO_PROTOCOL_MAX] = {0};
 
-void test_err_stats() {}
+    upo_protocol_response_t response = upo_protocol(store, input, output);
+
+    assert(strcmp(output, "ERR DATA Il numero di dati immessi non è coerente con la dimensione dichiarata\n") == 0);
+    assert(response == ERR_DATA);
+
+    upo_store_destroy(store);
+}
+
+/*
+I: 6 1 3 4\n
+O: ERR DATA Il numero di dati immessi non è coerente con la dimensione dichiarata\n
+*/
+void test_err_data_less()
+{
+    upo_store_t store = upo_store_create();
+    char input[] = "6 1 3 4\n";
+    char output[UPO_PROTOCOL_MAX] = {0};
+
+    upo_protocol_response_t response = upo_protocol(store, input, output);
+
+    assert(strcmp(output, "ERR DATA Il numero di dati immessi non è coerente con la dimensione dichiarata\n") == 0);
+    assert(response == ERR_DATA);
+
+    upo_store_destroy(store);
+}
+
+/*
+I: 0 1 3\n
+O: ERR DATA Il numero di dati immessi non è coerente con la dimensione dichiarata\n
+*/
+void test_err_data_with_zero()
+{
+    upo_store_t store = upo_store_create();
+    char input[] = "0 1 3\n";
+    char output[UPO_PROTOCOL_MAX] = {0};
+
+    upo_protocol_response_t response = upo_protocol(store, input, output);
+
+    assert(strcmp(output, "ERR DATA Il numero di dati immessi non è coerente con la dimensione dichiarata\n") == 0);
+    assert(response == ERR_DATA);
+
+    upo_store_destroy(store);
+}
+
+/*
+I: 0\n
+O: ERR STATS Non posso calcolare la media di nessun campione\n
+*/
+void test_err_stats_avg()
+{
+    upo_store_t store = upo_store_create();
+    char input[] = "0\n";
+    char output[UPO_PROTOCOL_MAX] = {0};
+
+    upo_protocol_response_t response = upo_protocol(store, input, output);
+
+    assert(strcmp(output, "ERR STATS Non posso calcolare la media di nessun campione\n") == 0);
+    assert(response == ERR_STATS);
+
+    upo_store_destroy(store);
+}
+
+/*
+I: 1 10\n
+O: OK DATA 1\n
+I: 0\n
+O: ERR STATS Non posso calcolare la varianza di 1 campione\n
+*/
+void test_err_stats_variance()
+{
+    upo_store_t store = upo_store_create();
+    char input[] = "1 10\n";
+    char output[UPO_PROTOCOL_MAX] = {0};
+
+    upo_protocol_response_t response = upo_protocol(store, input, output);
+
+    assert(strcmp(output, "OK DATA 1\n") == 0);
+    assert(response == OK_DATA);
+
+    char input2[] = "1 10\n";
+    memset(output, '\0', UPO_PROTOCOL_MAX);
+    response = upo_protocol(store, input2, output);
+
+    assert(strcmp(output, "ERR STATS Non posso calcolare la varianza di 1 campione\n") == 0);
+    assert(response == ERR_STATS);
+
+    upo_store_destroy(store);
+}
 
 void test_ok_data() {}
 

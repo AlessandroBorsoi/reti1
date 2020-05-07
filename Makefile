@@ -13,7 +13,7 @@ bin:
 apps:
 	cd apps && $(MAKE) all
 
-test: clean bin
+test: bin
 	cd test && $(MAKE) all
 
 clean:

@@ -1,5 +1,6 @@
 #include <string.h>
 #include <errno.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <upo/protocol.h>
 
@@ -25,10 +26,16 @@ upo_protocol_response_t upo_protocol(upo_store_t store, const char *input, char 
         return ERR_SYNTAX;
     }
 
-    uint64_t i = 0;
-    while (token != NULL && i < size)
+    token = strtok(NULL, delim);
+    if (strcmp(token, "\n") == 0)
     {
-        token = strtok(NULL, delim);
+        snprintf(output, UPO_PROTOCOL_MAX, "OK STATS %zu %f %f\n", upo_store_size(store), upo_store_avg(store), upo_store_variance(store));
+        return OK_STATS;
+    }
+
+    while (token != NULL)
+    {
+        errno = 0;
         uint64_t data = strtoul(token, &endptr, 10);
         if (token == endptr || errno != 0)
         {
@@ -36,15 +43,16 @@ upo_protocol_response_t upo_protocol(upo_store_t store, const char *input, char 
             return ERR_SYNTAX;
         }
         upo_store_insert(store, data);
-        i++;    
-    }
-    if (strcmp(token, "\n") != 0)
-    {
-        strcpy(output, "ERR SYNTAX Mancanza del carattere di terminazione\n");
-        return ERR_SYNTAX;
+        token = strtok(NULL, delim);
     }
 
-    strcpy(output, "TODO\n");
+    if (0)
+    {
+        snprintf(output, UPO_PROTOCOL_MAX, "OK STATS %zu %f %f\n", upo_store_size(store), upo_store_avg(store), upo_store_variance(store));
+        return OK_STATS;
+    }
+
+    snprintf(output, UPO_PROTOCOL_MAX, "OK DATA %llu\n", size);
     return OK_DATA;
 }
 
