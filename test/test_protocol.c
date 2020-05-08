@@ -21,41 +21,55 @@ static void test_ok_stats();
 
 int main()
 {
-    printf("Test case 'ERR SYNTAX'... ");
-    fflush(stdout);
-    test_err_syntax_rc_message();
-    test_err_syntax_empty_message();
-    test_err_syntax_invalid_first_number();
-    test_err_syntax_invalid_other_number();
-    test_err_syntax_invalid_non_integer_other_number();
-    test_err_syntax_invalid_non_integer_first_number();
-    test_err_syntax_invalid_termination_of_number();
-    //test_err_syntax_terminator();
-    printf("OK\n");
+    if (1)
+    {
+        printf("Test case 'ERR SYNTAX'... ");
+        fflush(stdout);
+        test_err_syntax_rc_message();
+        test_err_syntax_empty_message();
+        test_err_syntax_invalid_first_number();
+        test_err_syntax_invalid_other_number();
+        test_err_syntax_invalid_non_integer_other_number();
+        test_err_syntax_invalid_non_integer_first_number();
+        test_err_syntax_invalid_termination_of_number();
+        //test_err_syntax_terminator();
+        printf("OK\n");
+    }
 
-    printf("Test case 'ERR DATA'... ");
-    fflush(stdout);
-    //test_err_data_more();
-    //test_err_data_less();
-    //test_err_data_with_zero();
-    printf("OK\n");
+    if (0)
+    {
+        printf("Test case 'ERR DATA'... ");
+        fflush(stdout);
+        test_err_data_more();
+        test_err_data_less();
+        test_err_data_with_zero();
+        printf("OK\n");
+    }
 
-    printf("Test case 'ERR STATS'... ");
-    fflush(stdout);
-    //test_err_stats_avg();
-    //test_err_stats_variance();
-    printf("OK\n");
+    if (1)
+    {
+        printf("Test case 'ERR STATS'... ");
+        fflush(stdout);
+        test_err_stats_avg();
+        test_err_stats_variance();
+        printf("OK\n");
+    }
 
-    printf("Test case 'OK DATA'... ");
-    fflush(stdout);
-    //test_ok_data();
-    printf("OK\n");
+    if (1)
+    {
+        printf("Test case 'OK DATA'... ");
+        fflush(stdout);
+        test_ok_data();
+        printf("OK\n");
+    }
 
-    printf("Test case 'OK STATS'... ");
-    fflush(stdout);
-    //test_ok_stats();
-    printf("OK\n");
-
+    if (1)
+    {
+        printf("Test case 'OK STATS'... ");
+        fflush(stdout);
+        test_ok_stats();
+        printf("OK\n");
+    }
     return 0;
 }
 
@@ -284,17 +298,11 @@ O: ERR STATS Non posso calcolare la varianza di 1 campione\n
 void test_err_stats_variance()
 {
     upo_store_t store = upo_store_create();
-    char input[] = "1 10\n";
+    upo_store_insert(store, 10);
+    char input[] = "0\n";
     char output[UPO_PROTOCOL_MAX] = {0};
 
     upo_protocol_response_t response = upo_protocol(store, input, output);
-
-    assert(strcmp(output, "OK DATA 1\n") == 0);
-    assert(response == OK_DATA);
-
-    char input2[] = "1 10\n";
-    memset(output, '\0', UPO_PROTOCOL_MAX);
-    response = upo_protocol(store, input2, output);
 
     assert(strcmp(output, "ERR STATS Non posso calcolare la varianza di 1 campione\n") == 0);
     assert(response == ERR_STATS);
@@ -340,26 +348,15 @@ O: OK STATS 3 14.0 28.0\n
 void test_ok_stats()
 {
     upo_store_t store = upo_store_create();
-    char input[] = "2 10 20\n";
+    upo_store_insert(store, 10);
+    upo_store_insert(store, 20);
+    upo_store_insert(store, 12);
+    char input[] = "0\n";
     char output[UPO_PROTOCOL_MAX] = {0};
 
     upo_protocol_response_t response = upo_protocol(store, input, output);
 
-    assert(strcmp(output, "OK DATA 2\n") == 0);
-    assert(response == OK_DATA);
-
-    char input2[] = "1 12\n";
-    memset(output, '\0', UPO_PROTOCOL_MAX);
-    response = upo_protocol(store, input2, output);
-
-    assert(strcmp(output, "OK DATA 1\n") == 0);
-    assert(response == OK_DATA);
-
-    char input3[] = "0\n";
-    memset(output, '\0', UPO_PROTOCOL_MAX);
-    response = upo_protocol(store, input3, output);
-
-    assert(strcmp(output, "OK STATS 3 14.0 28.0\n") == 0);
+    assert(strcmp(output, "OK STATS 3 14.00 18.67\n") == 0);
     assert(response == OK_STATS);
 
     upo_store_destroy(store);
