@@ -10,6 +10,8 @@ static void test_err_syntax_invalid_other_number();
 static void test_err_syntax_invalid_non_integer_other_number();
 static void test_err_syntax_invalid_non_integer_first_number();
 static void test_err_syntax_invalid_termination_of_number();
+static void test_err_syntax_invalid_other_negative_number();
+static void test_err_syntax_invalid_first_negative_number();
 static void test_err_syntax_terminator();
 static void test_err_data_more();
 static void test_err_data_less();
@@ -31,6 +33,8 @@ int main()
     test_err_syntax_invalid_non_integer_other_number();
     test_err_syntax_invalid_non_integer_first_number();
     test_err_syntax_invalid_termination_of_number();
+    test_err_syntax_invalid_other_negative_number();
+    test_err_syntax_invalid_first_negative_number();
     test_err_syntax_terminator();
     printf("OK\n");
 
@@ -181,6 +185,42 @@ void test_err_syntax_invalid_termination_of_number()
 {
     upo_store_t store = upo_store_create();
     char input[] = "2 1 3test\n";
+    char output[UPO_PROTOCOL_MAX] = {0};
+
+    upo_protocol_response_t response = upo_protocol(store, input, output);
+
+    assert(strcmp(output, "ERR SYNTAX Numero non valido\n") == 0);
+    assert(response == ERR_SYNTAX);
+
+    upo_store_destroy(store);
+}
+
+/*
+I: 2 -1 3\n
+O: ERR SYNTAX Numero non valido\n
+*/
+void test_err_syntax_invalid_other_negative_number()
+{
+    upo_store_t store = upo_store_create();
+    char input[] = "2 -1 3\n";
+    char output[UPO_PROTOCOL_MAX] = {0};
+
+    upo_protocol_response_t response = upo_protocol(store, input, output);
+
+    assert(strcmp(output, "ERR SYNTAX Numero non valido\n") == 0);
+    assert(response == ERR_SYNTAX);
+
+    upo_store_destroy(store);
+}
+
+/*
+I: -1\n
+O: ERR SYNTAX Numero non valido\n
+*/
+void test_err_syntax_invalid_first_negative_number()
+{
+    upo_store_t store = upo_store_create();
+    char input[] = "-1\n";
     char output[UPO_PROTOCOL_MAX] = {0};
 
     upo_protocol_response_t response = upo_protocol(store, input, output);
