@@ -13,6 +13,7 @@ static void test_err_syntax_invalid_termination_of_number();
 static void test_err_syntax_invalid_other_negative_number();
 static void test_err_syntax_invalid_first_negative_number();
 static void test_err_syntax_terminator();
+static void test_err_syntax_char_over_terminator();
 static void test_err_data_more();
 static void test_err_data_less();
 static void test_err_data_with_zero();
@@ -36,6 +37,7 @@ int main()
     test_err_syntax_invalid_other_negative_number();
     test_err_syntax_invalid_first_negative_number();
     test_err_syntax_terminator();
+    test_err_syntax_char_over_terminator();
     printf("OK\n");
 
     printf("Test case 'ERR DATA'... ");
@@ -244,6 +246,24 @@ void test_err_syntax_terminator()
     upo_protocol_response_t response = upo_protocol(store, input, output);
 
     assert(strcmp(output, "ERR SYNTAX Mancanza del carattere di terminazione\n") == 0);
+    assert(response == ERR_SYNTAX);
+
+    upo_store_destroy(store);
+}
+
+/*
+I: 3 1 3\n 4
+O: ERR SYNTAX Messaggio non valido\n
+*/
+void test_err_syntax_char_over_terminator()
+{
+    upo_store_t store = upo_store_create();
+    char input[] = "3 1 3\n 4";
+    char output[UPO_PROTOCOL_MAX] = {0};
+
+    upo_protocol_response_t response = upo_protocol(store, input, output);
+
+    assert(strcmp(output, "ERR SYNTAX Messaggio non valido\n") == 0);
     assert(response == ERR_SYNTAX);
 
     upo_store_destroy(store);
