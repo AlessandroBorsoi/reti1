@@ -3,7 +3,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
+#include <stdbool.h>
 #include <upo/protocol.h>
+
+static bool is_valid_number(char *str, uint64_t number, char *endptr)
+{
+    return str == endptr || errno != 0 || number == ULONG_MAX || (errno == 0 && str && *endptr != 0);
+}
 
 upo_protocol_response_t upo_protocol(upo_store_t store, const char *input, char *output)
 {
@@ -34,7 +40,7 @@ upo_protocol_response_t upo_protocol(upo_store_t store, const char *input, char 
 
     char *endptr = NULL;
     uint64_t size = strtoul(token, &endptr, 10);
-    if (token == endptr || errno != 0 || size == ULONG_MAX || (errno == 0 && token && *endptr != 0))
+    if (is_valid_number(token, size, endptr))
     {
         strcpy(output, "ERR SYNTAX Numero non valido\n");
         return ERR_SYNTAX;
@@ -64,7 +70,7 @@ upo_protocol_response_t upo_protocol(upo_store_t store, const char *input, char 
     {
         errno = 0;
         uint64_t data = strtoul(token, &endptr, 10);
-        if (token == endptr || errno != 0 || data == ULONG_MAX || (errno == 0 && token && *endptr != 0))
+        if (is_valid_number(token, data, endptr))
         {
             strcpy(output, "ERR SYNTAX Numero non valido\n");
             return ERR_SYNTAX;
