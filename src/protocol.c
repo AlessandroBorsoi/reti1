@@ -13,7 +13,7 @@ upo_protocol_response_t upo_protocol(upo_store_t store, const char *input, char 
 
     char *token = strtok(input_copy, delim);
 
-    if (token == NULL || strcmp(token, "\n") == 0)
+    if (token == NULL)
     {
         strcpy(output, "ERR SYNTAX Messaggio vuoto\n");
         return ERR_SYNTAX;
@@ -45,6 +45,8 @@ upo_protocol_response_t upo_protocol(upo_store_t store, const char *input, char 
         return OK_STATS;
     }
 
+    uint64_t counter = 0;
+    uint64_t numbers[size];
     while (token != NULL)
     {
         errno = 0;
@@ -54,8 +56,24 @@ upo_protocol_response_t upo_protocol(upo_store_t store, const char *input, char 
             strcpy(output, "ERR SYNTAX Numero non valido\n");
             return ERR_SYNTAX;
         }
+        if (counter == size)
+        {
+            strcpy(output, "ERR DATA Il numero di dati immessi è maggiore della dimensione dichiarata\n");
+            return ERR_DATA;
+        }
+        numbers[counter] = data;
         token = strtok(NULL, delim);
+        counter++;
     }
+
+    if (counter < size)
+    {
+        strcpy(output, "ERR DATA Il numero di dati immessi è minore della dimensione dichiarata\n");
+        return ERR_DATA;
+    }
+
+    for (uint64_t i = 0; i < size; i++)
+        upo_store_insert(store, numbers[i]);
 
     snprintf(output, UPO_PROTOCOL_MAX, "OK DATA %llu\n", size);
     return OK_DATA;

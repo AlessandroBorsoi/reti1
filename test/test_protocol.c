@@ -18,58 +18,50 @@ static void test_err_stats_avg();
 static void test_err_stats_variance();
 static void test_ok_data();
 static void test_ok_stats();
+static void test_ok();
 
 int main()
 {
-    if (1)
-    {
-        printf("Test case 'ERR SYNTAX'... ");
-        fflush(stdout);
-        test_err_syntax_rc_message();
-        test_err_syntax_empty_message();
-        test_err_syntax_invalid_first_number();
-        test_err_syntax_invalid_other_number();
-        test_err_syntax_invalid_non_integer_other_number();
-        test_err_syntax_invalid_non_integer_first_number();
-        test_err_syntax_invalid_termination_of_number();
-        //test_err_syntax_terminator();
-        printf("OK\n");
-    }
+    printf("Test case 'ERR SYNTAX'... ");
+    fflush(stdout);
+    test_err_syntax_rc_message();
+    test_err_syntax_empty_message();
+    test_err_syntax_invalid_first_number();
+    test_err_syntax_invalid_other_number();
+    test_err_syntax_invalid_non_integer_other_number();
+    test_err_syntax_invalid_non_integer_first_number();
+    test_err_syntax_invalid_termination_of_number();
+    //test_err_syntax_terminator();
+    printf("OK\n");
 
-    if (0)
-    {
-        printf("Test case 'ERR DATA'... ");
-        fflush(stdout);
-        test_err_data_more();
-        test_err_data_less();
-        test_err_data_with_zero();
-        printf("OK\n");
-    }
+    printf("Test case 'ERR DATA'... ");
+    fflush(stdout);
+    test_err_data_more();
+    test_err_data_less();
+    test_err_data_with_zero();
+    printf("OK\n");
 
-    if (1)
-    {
-        printf("Test case 'ERR STATS'... ");
-        fflush(stdout);
-        test_err_stats_avg();
-        test_err_stats_variance();
-        printf("OK\n");
-    }
+    printf("Test case 'ERR STATS'... ");
+    fflush(stdout);
+    test_err_stats_avg();
+    test_err_stats_variance();
+    printf("OK\n");
 
-    if (1)
-    {
-        printf("Test case 'OK DATA'... ");
-        fflush(stdout);
-        test_ok_data();
-        printf("OK\n");
-    }
+    printf("Test case 'OK DATA'... ");
+    fflush(stdout);
+    test_ok_data();
+    printf("OK\n");
 
-    if (1)
-    {
-        printf("Test case 'OK STATS'... ");
-        fflush(stdout);
-        test_ok_stats();
-        printf("OK\n");
-    }
+    printf("Test case 'OK STATS'... ");
+    fflush(stdout);
+    test_ok_stats();
+    printf("OK\n");
+
+    printf("Test case 'OK'... ");
+    fflush(stdout);
+    test_ok();
+    printf("OK\n");
+
     return 0;
 }
 
@@ -219,7 +211,7 @@ void test_err_syntax_terminator()
 
 /*
 I: 2 1 3 4\n
-O: ERR DATA Il numero di dati immessi non è coerente con la dimensione dichiarata\n
+O: ERR DATA Il numero di dati immessi è maggiore della dimensione dichiarata\n
 */
 void test_err_data_more()
 {
@@ -229,25 +221,25 @@ void test_err_data_more()
 
     upo_protocol_response_t response = upo_protocol(store, input, output);
 
-    assert(strcmp(output, "ERR DATA Il numero di dati immessi non è coerente con la dimensione dichiarata\n") == 0);
+    assert(strcmp(output, "ERR DATA Il numero di dati immessi è maggiore della dimensione dichiarata\n") == 0);
     assert(response == ERR_DATA);
 
     upo_store_destroy(store);
 }
 
 /*
-I: 6 1 3 4\n
-O: ERR DATA Il numero di dati immessi non è coerente con la dimensione dichiarata\n
+I: 4 1 3 4\n
+O: ERR DATA Il numero di dati immessi è minore della dimensione dichiarata\n
 */
 void test_err_data_less()
 {
     upo_store_t store = upo_store_create();
-    char input[] = "6 1 3 4\n";
+    char input[] = "4 1 3 4\n";
     char output[UPO_PROTOCOL_MAX] = {0};
 
     upo_protocol_response_t response = upo_protocol(store, input, output);
 
-    assert(strcmp(output, "ERR DATA Il numero di dati immessi non è coerente con la dimensione dichiarata\n") == 0);
+    assert(strcmp(output, "ERR DATA Il numero di dati immessi è minore della dimensione dichiarata\n") == 0);
     assert(response == ERR_DATA);
 
     upo_store_destroy(store);
@@ -255,7 +247,7 @@ void test_err_data_less()
 
 /*
 I: 0 1 3\n
-O: ERR DATA Il numero di dati immessi non è coerente con la dimensione dichiarata\n
+O: ERR DATA Il numero di dati immessi è maggiore della dimensione dichiarata\n
 */
 void test_err_data_with_zero()
 {
@@ -265,7 +257,7 @@ void test_err_data_with_zero()
 
     upo_protocol_response_t response = upo_protocol(store, input, output);
 
-    assert(strcmp(output, "ERR DATA Il numero di dati immessi non è coerente con la dimensione dichiarata\n") == 0);
+    assert(strcmp(output, "ERR DATA Il numero di dati immessi è maggiore della dimensione dichiarata\n") == 0);
     assert(response == ERR_DATA);
 
     upo_store_destroy(store);
@@ -343,7 +335,7 @@ O: OK DATA 2\n
 I: 1 12\n
 O: OK DATA 1\n
 I: 0\n
-O: OK STATS 3 14.0 28.0\n
+O: OK STATS 3 14.00 18.67\n
 */
 void test_ok_stats()
 {
@@ -357,6 +349,42 @@ void test_ok_stats()
     upo_protocol_response_t response = upo_protocol(store, input, output);
 
     assert(strcmp(output, "OK STATS 3 14.00 18.67\n") == 0);
+    assert(response == OK_STATS);
+
+    upo_store_destroy(store);
+}
+
+/*
+I: 2 10 20\n
+O: OK DATA 2\n
+I: 1 12\n
+O: OK DATA 1\n
+I: 0\n
+O: OK STATS 3 14.00 18.67\n
+*/
+void test_ok()
+{
+    upo_store_t store = upo_store_create();
+    char input[] = "10 1 2 3 4 5 6 7 8 9 10\n";
+    char output[UPO_PROTOCOL_MAX] = {0};
+
+    upo_protocol_response_t response = upo_protocol(store, input, output);
+
+    assert(strcmp(output, "OK DATA 10\n") == 0);
+    assert(response == OK_DATA);
+
+    char input2[] = "3 1 2 3\n";
+    memset(output, '\0', UPO_PROTOCOL_MAX);
+    response = upo_protocol(store, input2, output);
+
+    assert(strcmp(output, "OK DATA 3\n") == 0);
+    assert(response == OK_DATA);
+
+    char input3[] = "0\n";
+    memset(output, '\0', UPO_PROTOCOL_MAX);
+    response = upo_protocol(store, input3, output);
+
+    assert(strcmp(output, "OK STATS 13 4.69 8.67\n") == 0);
     assert(response == OK_STATS);
 
     upo_store_destroy(store);
