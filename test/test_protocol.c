@@ -5,18 +5,18 @@
 
 static void test_err_syntax_rc_message();
 static void test_err_syntax_empty_message();
-static void test_err_syntax_invalid_first_number();
-static void test_err_syntax_invalid_other_number();
-static void test_err_syntax_invalid_non_integer_other_number();
-static void test_err_syntax_invalid_non_integer_first_number();
+static void test_err_syntax_invalid_size_number();
+static void test_err_syntax_invalid_data_number();
+static void test_err_syntax_invalid_non_integer_data_number();
+static void test_err_syntax_invalid_non_integer_size_number();
 static void test_err_syntax_invalid_termination_of_number();
-static void test_err_syntax_invalid_other_negative_number();
-static void test_err_syntax_invalid_first_negative_number();
+static void test_err_syntax_invalid_data_negative_number();
+static void test_err_syntax_invalid_size_negative_number();
 static void test_err_syntax_terminator();
-static void test_err_syntax_char_over_terminator();
+static void test_err_syntax_char_after_terminator();
 static void test_err_data_more();
 static void test_err_data_less();
-static void test_err_data_with_zero();
+static void test_err_data_with_zero_size();
 static void test_err_stats_avg();
 static void test_err_stats_variance();
 static void test_ok_data();
@@ -29,22 +29,22 @@ int main()
     fflush(stdout);
     test_err_syntax_rc_message();
     test_err_syntax_empty_message();
-    test_err_syntax_invalid_first_number();
-    test_err_syntax_invalid_other_number();
-    test_err_syntax_invalid_non_integer_other_number();
-    test_err_syntax_invalid_non_integer_first_number();
+    test_err_syntax_invalid_size_number();
+    test_err_syntax_invalid_data_number();
+    test_err_syntax_invalid_non_integer_data_number();
+    test_err_syntax_invalid_non_integer_size_number();
     test_err_syntax_invalid_termination_of_number();
-    test_err_syntax_invalid_other_negative_number();
-    test_err_syntax_invalid_first_negative_number();
+    test_err_syntax_invalid_data_negative_number();
+    test_err_syntax_invalid_size_negative_number();
     test_err_syntax_terminator();
-    test_err_syntax_char_over_terminator();
+    test_err_syntax_char_after_terminator();
     printf("OK\n");
 
     printf("Test case 'ERR DATA'... ");
     fflush(stdout);
     test_err_data_more();
     test_err_data_less();
-    test_err_data_with_zero();
+    test_err_data_with_zero_size();
     printf("OK\n");
 
     printf("Test case 'ERR STATS'... ");
@@ -111,7 +111,7 @@ void test_err_syntax_empty_message()
 I: test\n
 O: ERR SYNTAX Numero non valido\n
 */
-void test_err_syntax_invalid_first_number()
+void test_err_syntax_invalid_size_number()
 {
     upo_store_t store = upo_store_create();
     char input[] = "test\n";
@@ -129,7 +129,7 @@ void test_err_syntax_invalid_first_number()
 I: 2 1 test\n
 O: ERR SYNTAX Numero non valido\n
 */
-void test_err_syntax_invalid_other_number()
+void test_err_syntax_invalid_data_number()
 {
     upo_store_t store = upo_store_create();
     char input[] = "2 1 test\n";
@@ -147,7 +147,7 @@ void test_err_syntax_invalid_other_number()
 I: 2 1 3.5\n
 O: ERR SYNTAX Numero non valido\n
 */
-void test_err_syntax_invalid_non_integer_other_number()
+void test_err_syntax_invalid_non_integer_data_number()
 {
     upo_store_t store = upo_store_create();
     char input[] = "2 1 3.5\n";
@@ -165,7 +165,7 @@ void test_err_syntax_invalid_non_integer_other_number()
 I: 3.5\n
 O: ERR SYNTAX Numero non valido\n
 */
-void test_err_syntax_invalid_non_integer_first_number()
+void test_err_syntax_invalid_non_integer_size_number()
 {
     upo_store_t store = upo_store_create();
     char input[] = "3.5\n";
@@ -201,7 +201,7 @@ void test_err_syntax_invalid_termination_of_number()
 I: 2 -1 3\n
 O: ERR SYNTAX Numero non valido\n
 */
-void test_err_syntax_invalid_other_negative_number()
+void test_err_syntax_invalid_data_negative_number()
 {
     upo_store_t store = upo_store_create();
     char input[] = "2 -1 3\n";
@@ -219,7 +219,7 @@ void test_err_syntax_invalid_other_negative_number()
 I: -1\n
 O: ERR SYNTAX Numero non valido\n
 */
-void test_err_syntax_invalid_first_negative_number()
+void test_err_syntax_invalid_size_negative_number()
 {
     upo_store_t store = upo_store_create();
     char input[] = "-1\n";
@@ -255,7 +255,7 @@ void test_err_syntax_terminator()
 I: 3 1 3\n 4
 O: ERR SYNTAX Messaggio non valido\n
 */
-void test_err_syntax_char_over_terminator()
+void test_err_syntax_char_after_terminator()
 {
     upo_store_t store = upo_store_create();
     char input[] = "3 1 3\n 4";
@@ -309,7 +309,7 @@ void test_err_data_less()
 I: 0 1 3\n
 O: ERR DATA Il numero di dati immessi è maggiore della dimensione dichiarata\n
 */
-void test_err_data_with_zero()
+void test_err_data_with_zero_size()
 {
     upo_store_t store = upo_store_create();
     char input[] = "0 1 3\n";
