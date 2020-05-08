@@ -31,7 +31,7 @@ int main()
     test_err_syntax_invalid_non_integer_other_number();
     test_err_syntax_invalid_non_integer_first_number();
     test_err_syntax_invalid_termination_of_number();
-    //test_err_syntax_terminator();
+    test_err_syntax_terminator();
     printf("OK\n");
 
     printf("Test case 'ERR DATA'... ");

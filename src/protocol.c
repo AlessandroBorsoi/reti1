@@ -19,6 +19,13 @@ upo_protocol_response_t upo_protocol(upo_store_t store, const char *input, char 
         return ERR_SYNTAX;
     }
 
+    char *terminator = strchr(input, '\n');
+    if (terminator == NULL)
+    {
+        strcpy(output, "ERR SYNTAX Mancanza del carattere di terminazione\n");
+        return ERR_SYNTAX;
+    }
+
     char *endptr = NULL;
     uint64_t size = strtoul(token, &endptr, 10);
     if (token == endptr || errno != 0 || (errno == 0 && token && *endptr != 0))
