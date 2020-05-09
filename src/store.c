@@ -47,7 +47,7 @@ void upo_store_insert(upo_store_t store, uint64_t number)
     store->size++;
 }
 
-size_t upo_store_size(const upo_store_t store)
+uint64_t upo_store_size(const upo_store_t store)
 {
     if (store != NULL)
         return store->size;

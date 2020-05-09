@@ -91,9 +91,9 @@ void test_average()
 
     upo_store_destroy(store);
 
-    assert(fequal(upo_store_sample_mean(store), -1));
-
     store = upo_store_create();
+
+    assert(fequal(upo_store_sample_mean(store), -1));
 
     for (uint64_t i = 1; i <= 100; i++)
         upo_store_insert(store, i);

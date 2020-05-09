@@ -41,7 +41,7 @@ void upo_store_insert(upo_store_t store, uint64_t number);
  * \param store The store.
  * \return The number of elements stored in the store, or `0` otherwise.
  */
-size_t upo_store_size(const upo_store_t store);
+uint64_t upo_store_size(const upo_store_t store);
 
 /**
  * \brief Returns the average of the elements stored in the given store.
