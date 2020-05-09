@@ -77,12 +77,12 @@ double upo_store_sample_variance(const upo_store_t store)
         return -1;
     else
     {
-        double avg = upo_store_sample_mean(store);
+        double sm = upo_store_sample_mean(store);
         double sum = 0;
         upo_store_node_t *node = store->top;
         while (node != NULL)
         {
-            double diff = node->number - avg;
+            double diff = node->number - sm;
             sum += diff * diff;
             node = node->next;
         }
