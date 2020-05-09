@@ -133,18 +133,17 @@ void test_variance()
     for (uint64_t i = 1; i <= 10; i++)
         upo_store_insert(store, i);
 
-    assert(fequal(upo_store_variance(store), 8.25));
+    assert(fequal(upo_store_variance(store), 9.166667));
 
     upo_store_destroy(store);
 
     store = upo_store_create();
 
-    uint64_t n = 1000;
-    for (uint64_t i = 1; i <= n; i++)
-        upo_store_insert(store, i);
+    upo_store_insert(store, 10);
+    upo_store_insert(store, 12);
+    upo_store_insert(store, 20);
 
-    double variance = ((double)n * n - 1) / 12;
-    assert(fequal(upo_store_variance(store), variance));
+    assert(fequal(upo_store_variance(store), 28.0));
 
     upo_store_destroy(store);
 }

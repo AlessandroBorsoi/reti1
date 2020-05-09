@@ -86,6 +86,6 @@ double upo_store_variance(const upo_store_t store)
             sum += diff * diff;
             node = node->next;
         }
-        return sum / upo_store_size(store);
+        return sum / (upo_store_size(store) - 1);
     }
 }

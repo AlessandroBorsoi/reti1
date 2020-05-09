@@ -408,7 +408,7 @@ void test_ok_stats()
 
     upo_protocol_response_t response = upo_protocol(store, input, output);
 
-    assert(strcmp(output, "OK STATS 3 14.00 18.67\n") == 0);
+    assert(strcmp(output, "OK STATS 3 14.00 28.00\n") == 0);
     assert(response == OK_STATS);
 
     upo_store_destroy(store);
@@ -444,7 +444,7 @@ void test_ok()
     memset(output, '\0', UPO_PROTOCOL_MAX);
     response = upo_protocol(store, input3, output);
 
-    assert(strcmp(output, "OK STATS 13 4.69 8.67\n") == 0);
+    assert(strcmp(output, "OK STATS 13 4.69 9.40\n") == 0);
     assert(response == OK_STATS);
 
     upo_store_destroy(store);
