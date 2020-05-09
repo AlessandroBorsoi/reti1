@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <stdbool.h>
+#include <inttypes.h>
 #include <upo/protocol.h>
 
 static bool is_valid_number(char *str, uint64_t number, char *endptr)
@@ -94,6 +95,6 @@ upo_protocol_response_t upo_protocol(upo_store_t store, const char *input, char 
     for (uint64_t i = 0; i < size; i++)
         upo_store_insert(store, numbers[i]);
 
-    snprintf(output, UPO_PROTOCOL_MAX, "OK DATA %llu\n", size);
+    snprintf(output, UPO_PROTOCOL_MAX, "OK DATA %"PRIu64"\n", size);
     return OK_DATA;
 }
