@@ -60,7 +60,7 @@ upo_protocol_response_t upo_protocol(upo_store_t store, const char *input, char 
             strcpy(output, "ERR STATS Non posso calcolare la varianza di 1 campione\n");
             return ERR_STATS;
         }
-        snprintf(output, UPO_PROTOCOL_MAX, "OK STATS %zu %.2f %.2f\n", store_size, upo_store_avg(store), upo_store_variance(store));
+        snprintf(output, UPO_PROTOCOL_MAX, "OK STATS %zu %.2f %.2f\n", store_size, upo_store_sample_mean(store), upo_store_sample_variance(store));
         return OK_STATS;
     }
 

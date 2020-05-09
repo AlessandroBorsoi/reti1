@@ -75,30 +75,30 @@ void test_average()
 {
     upo_store_t store = upo_store_create();
 
-    assert(fequal(upo_store_avg(store), -1));
+    assert(fequal(upo_store_sample_mean(store), -1));
 
     upo_store_insert(store, 1);
 
-    assert(fequal(upo_store_avg(store), 1));
+    assert(fequal(upo_store_sample_mean(store), 1));
 
     upo_store_insert(store, 3);
 
-    assert(fequal(upo_store_avg(store), 2));
+    assert(fequal(upo_store_sample_mean(store), 2));
 
     upo_store_insert(store, 5);
 
-    assert(fequal(upo_store_avg(store), 3));
+    assert(fequal(upo_store_sample_mean(store), 3));
 
     upo_store_destroy(store);
 
-    assert(fequal(upo_store_avg(store), -1));
+    assert(fequal(upo_store_sample_mean(store), -1));
 
     store = upo_store_create();
 
     for (uint64_t i = 1; i <= 100; i++)
         upo_store_insert(store, i);
 
-    assert(fequal(upo_store_avg(store), 50.5));
+    assert(fequal(upo_store_sample_mean(store), 50.5));
 
     upo_store_destroy(store);
 
@@ -107,7 +107,7 @@ void test_average()
     for (uint64_t i = 0; i < 100000; i++)
         upo_store_insert(store, 99999);
 
-    assert(fequal(upo_store_avg(store), 99999));
+    assert(fequal(upo_store_sample_mean(store), 99999));
 
     upo_store_destroy(store);
 }
@@ -116,15 +116,15 @@ void test_variance()
 {
     upo_store_t store = upo_store_create();
 
-    assert(fequal(upo_store_variance(store), -1));
+    assert(fequal(upo_store_sample_variance(store), -1));
 
     upo_store_insert(store, 1);
 
-    assert(fequal(upo_store_variance(store), -1));
+    assert(fequal(upo_store_sample_variance(store), -1));
 
     upo_store_insert(store, 1);
 
-    assert(fequal(upo_store_variance(store), 0));
+    assert(fequal(upo_store_sample_variance(store), 0));
 
     upo_store_destroy(store);
 
@@ -133,7 +133,7 @@ void test_variance()
     for (uint64_t i = 1; i <= 10; i++)
         upo_store_insert(store, i);
 
-    assert(fequal(upo_store_variance(store), 9.166667));
+    assert(fequal(upo_store_sample_variance(store), 9.166667));
 
     upo_store_destroy(store);
 
@@ -143,7 +143,7 @@ void test_variance()
     upo_store_insert(store, 12);
     upo_store_insert(store, 20);
 
-    assert(fequal(upo_store_variance(store), 28.0));
+    assert(fequal(upo_store_sample_variance(store), 28.0));
 
     upo_store_destroy(store);
 }

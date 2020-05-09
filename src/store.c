@@ -54,7 +54,7 @@ size_t upo_store_size(const upo_store_t store)
     return 0;
 }
 
-double upo_store_avg(const upo_store_t store)
+double upo_store_sample_mean(const upo_store_t store)
 {
     if (store == NULL || upo_store_size(store) == 0)
         return -1;
@@ -71,13 +71,13 @@ double upo_store_avg(const upo_store_t store)
     }
 }
 
-double upo_store_variance(const upo_store_t store)
+double upo_store_sample_variance(const upo_store_t store)
 {
     if (store == NULL || store->size < 2)
         return -1;
     else
     {
-        double avg = upo_store_avg(store);
+        double avg = upo_store_sample_mean(store);
         double sum = 0;
         upo_store_node_t *node = store->top;
         while (node != NULL)

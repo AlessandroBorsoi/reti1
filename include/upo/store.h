@@ -49,7 +49,7 @@ size_t upo_store_size(const upo_store_t store);
  * \param store The store.
  * \return The average of the (at least one) element(s) stored in the store, or `-1` otherwise.
  */
-double upo_store_avg(const upo_store_t store);
+double upo_store_sample_mean(const upo_store_t store);
 
 /**
  * \brief Returns the variance of the elements stored in the given store.
@@ -57,4 +57,4 @@ double upo_store_avg(const upo_store_t store);
  * \param store The store.
  * \return The variance of the (at least two) elements stored in the store, or `-1` otherwise.
  */
-double upo_store_variance(const upo_store_t store);
+double upo_store_sample_variance(const upo_store_t store);
