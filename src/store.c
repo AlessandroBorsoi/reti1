@@ -25,6 +25,7 @@ void upo_store_destroy(upo_store_t store)
             store->top = store->top->next;
             free(node);
         }
+        store->top = NULL;
         store->size = 0;
         free(store);
     }
@@ -49,14 +50,14 @@ void upo_store_insert(upo_store_t store, uint64_t number)
 
 uint64_t upo_store_size(const upo_store_t store)
 {
-    if (store != NULL)
-        return store->size;
-    return 0;
+    if (store == NULL || store->top == NULL)
+        return 0;
+    return store->size;
 }
 
 double upo_store_sample_mean(const upo_store_t store)
 {
-    if (store == NULL || upo_store_size(store) == 0)
+    if (upo_store_size(store) == 0)
         return -1;
     else
     {
@@ -73,7 +74,7 @@ double upo_store_sample_mean(const upo_store_t store)
 
 double upo_store_sample_variance(const upo_store_t store)
 {
-    if (store == NULL || store->size < 2)
+    if (upo_store_size(store) < 2)
         return -1;
     else
     {

@@ -53,22 +53,16 @@ void test_insert_size()
     for (uint64_t i = 0; i < 1000; i++)
         upo_store_insert(store, i);
 
-    size_t size = upo_store_size(store);
-
-    assert(size == 1000);
+    assert(upo_store_size(store) == 1000);
 
     for (uint64_t i = 0; i < 100; i++)
         upo_store_insert(store, i);
 
-    size = upo_store_size(store);
-
-    assert(size == 1100);
+    assert(upo_store_size(store) == 1100);
 
     upo_store_destroy(store);
 
-    size = upo_store_size(store);
-
-    assert(size == 0);
+    assert(upo_store_size(store) == 0);
 }
 
 void test_average()
