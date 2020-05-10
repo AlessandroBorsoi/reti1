@@ -23,9 +23,9 @@ typedef enum
 } upo_protocol_response_t;
 
 /**
- * \brief Given a store and an input string, returns the correct protocol output.
+ * \brief Given a store and an input string, returns the correct protocol output and response.
  *
- * \param store The store used for the number calculations.
+ * \param store The store used for the calculations.
  * \param input The input string.
  * \param output The output string.
  * 

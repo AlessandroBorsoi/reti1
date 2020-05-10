@@ -25,7 +25,7 @@ void program(int socket)
             break;
     }
     close(socket);
-    upo_store_destroy(store);
+    upo_store_destroy(&store);
 }
 
 int main(int argc, char *argv[])

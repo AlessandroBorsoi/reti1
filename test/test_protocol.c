@@ -86,7 +86,7 @@ void test_err_syntax_rc_message()
     assert(strcmp(output, "ERR SYNTAX Messaggio vuoto\n") == 0);
     assert(response == ERR_SYNTAX);
 
-    upo_store_destroy(store);
+    upo_store_destroy(&store);
 }
 
 /*
@@ -104,7 +104,7 @@ void test_err_syntax_empty_message()
     assert(strcmp(output, "ERR SYNTAX Messaggio vuoto\n") == 0);
     assert(response == ERR_SYNTAX);
 
-    upo_store_destroy(store);
+    upo_store_destroy(&store);
 }
 
 /*
@@ -122,7 +122,7 @@ void test_err_syntax_invalid_size_number()
     assert(strcmp(output, "ERR SYNTAX Numero non valido\n") == 0);
     assert(response == ERR_SYNTAX);
 
-    upo_store_destroy(store);
+    upo_store_destroy(&store);
 }
 
 /*
@@ -140,7 +140,7 @@ void test_err_syntax_invalid_data_number()
     assert(strcmp(output, "ERR SYNTAX Numero non valido\n") == 0);
     assert(response == ERR_SYNTAX);
 
-    upo_store_destroy(store);
+    upo_store_destroy(&store);
 }
 
 /*
@@ -158,7 +158,7 @@ void test_err_syntax_invalid_non_integer_data_number()
     assert(strcmp(output, "ERR SYNTAX Numero non valido\n") == 0);
     assert(response == ERR_SYNTAX);
 
-    upo_store_destroy(store);
+    upo_store_destroy(&store);
 }
 
 /*
@@ -176,7 +176,7 @@ void test_err_syntax_invalid_non_integer_size_number()
     assert(strcmp(output, "ERR SYNTAX Numero non valido\n") == 0);
     assert(response == ERR_SYNTAX);
 
-    upo_store_destroy(store);
+    upo_store_destroy(&store);
 }
 
 /*
@@ -194,7 +194,7 @@ void test_err_syntax_invalid_termination_of_number()
     assert(strcmp(output, "ERR SYNTAX Numero non valido\n") == 0);
     assert(response == ERR_SYNTAX);
 
-    upo_store_destroy(store);
+    upo_store_destroy(&store);
 }
 
 /*
@@ -212,7 +212,7 @@ void test_err_syntax_invalid_data_negative_number()
     assert(strcmp(output, "ERR SYNTAX Numero non valido\n") == 0);
     assert(response == ERR_SYNTAX);
 
-    upo_store_destroy(store);
+    upo_store_destroy(&store);
 }
 
 /*
@@ -230,7 +230,7 @@ void test_err_syntax_invalid_size_negative_number()
     assert(strcmp(output, "ERR SYNTAX Numero non valido\n") == 0);
     assert(response == ERR_SYNTAX);
 
-    upo_store_destroy(store);
+    upo_store_destroy(&store);
 }
 
 /*
@@ -248,7 +248,7 @@ void test_err_syntax_terminator()
     assert(strcmp(output, "ERR SYNTAX Mancanza del carattere di terminazione\n") == 0);
     assert(response == ERR_SYNTAX);
 
-    upo_store_destroy(store);
+    upo_store_destroy(&store);
 }
 
 /*
@@ -266,7 +266,7 @@ void test_err_syntax_char_after_terminator()
     assert(strcmp(output, "ERR SYNTAX Messaggio non valido\n") == 0);
     assert(response == ERR_SYNTAX);
 
-    upo_store_destroy(store);
+    upo_store_destroy(&store);
 }
 
 /*
@@ -284,7 +284,7 @@ void test_err_data_more()
     assert(strcmp(output, "ERR DATA Il numero di dati immessi è maggiore della dimensione dichiarata\n") == 0);
     assert(response == ERR_DATA);
 
-    upo_store_destroy(store);
+    upo_store_destroy(&store);
 }
 
 /*
@@ -302,7 +302,7 @@ void test_err_data_less()
     assert(strcmp(output, "ERR DATA Il numero di dati immessi è minore della dimensione dichiarata\n") == 0);
     assert(response == ERR_DATA);
 
-    upo_store_destroy(store);
+    upo_store_destroy(&store);
 }
 
 /*
@@ -320,7 +320,7 @@ void test_err_data_with_zero_size()
     assert(strcmp(output, "ERR DATA Il numero di dati immessi è maggiore della dimensione dichiarata\n") == 0);
     assert(response == ERR_DATA);
 
-    upo_store_destroy(store);
+    upo_store_destroy(&store);
 }
 
 /*
@@ -338,7 +338,7 @@ void test_err_stats_avg()
     assert(strcmp(output, "ERR STATS Non posso calcolare la media di nessun campione\n") == 0);
     assert(response == ERR_STATS);
 
-    upo_store_destroy(store);
+    upo_store_destroy(&store);
 }
 
 /*
@@ -359,7 +359,7 @@ void test_err_stats_variance()
     assert(strcmp(output, "ERR STATS Non posso calcolare la varianza di 1 campione\n") == 0);
     assert(response == ERR_STATS);
 
-    upo_store_destroy(store);
+    upo_store_destroy(&store);
 }
 
 /*
@@ -386,7 +386,7 @@ void test_ok_data()
     assert(strcmp(output, "OK DATA 3\n") == 0);
     assert(response == OK_DATA);
 
-    upo_store_destroy(store);
+    upo_store_destroy(&store);
 }
 
 /*
@@ -411,7 +411,7 @@ void test_ok_stats()
     assert(strcmp(output, "OK STATS 3 14.00 28.00\n") == 0);
     assert(response == OK_STATS);
 
-    upo_store_destroy(store);
+    upo_store_destroy(&store);
 }
 
 /*
@@ -447,5 +447,5 @@ void test_ok()
     assert(strcmp(output, "OK STATS 13 4.69 9.40\n") == 0);
     assert(response == OK_STATS);
 
-    upo_store_destroy(store);
+    upo_store_destroy(&store);
 }

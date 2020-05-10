@@ -25,7 +25,7 @@ upo_store_t upo_store_create();
  *
  * \param store The store to destroy.
  */
-void upo_store_destroy(upo_store_t store);
+void upo_store_destroy(upo_store_t *store);
 
 /**
  * \brief Add an element to the given store.

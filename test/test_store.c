@@ -43,7 +43,7 @@ void test_create_destroy()
 
     assert(store != NULL);
 
-    upo_store_destroy(store);
+    upo_store_destroy(&store);
 }
 
 void test_insert_size()
@@ -60,14 +60,18 @@ void test_insert_size()
 
     assert(upo_store_size(store) == 1100);
 
-    upo_store_destroy(store);
+    upo_store_destroy(&store);
 
     assert(upo_store_size(store) == 0);
 }
 
 void test_average()
 {
-    upo_store_t store = upo_store_create();
+    upo_store_t store = NULL;
+
+    assert(fequal(upo_store_sample_mean(store), -1));
+
+    store = upo_store_create();
 
     assert(fequal(upo_store_sample_mean(store), -1));
 
@@ -83,18 +87,18 @@ void test_average()
 
     assert(fequal(upo_store_sample_mean(store), 3));
 
-    upo_store_destroy(store);
-
-    store = upo_store_create();
+    upo_store_destroy(&store);
 
     assert(fequal(upo_store_sample_mean(store), -1));
+
+    store = upo_store_create();
 
     for (uint64_t i = 1; i <= 100; i++)
         upo_store_insert(store, i);
 
     assert(fequal(upo_store_sample_mean(store), 50.5));
 
-    upo_store_destroy(store);
+    upo_store_destroy(&store);
 
     store = upo_store_create();
 
@@ -103,7 +107,7 @@ void test_average()
 
     assert(fequal(upo_store_sample_mean(store), 99999));
 
-    upo_store_destroy(store);
+    upo_store_destroy(&store);
 }
 
 void test_variance()
@@ -120,7 +124,7 @@ void test_variance()
 
     assert(fequal(upo_store_sample_variance(store), 0));
 
-    upo_store_destroy(store);
+    upo_store_destroy(&store);
 
     store = upo_store_create();
 
@@ -129,7 +133,7 @@ void test_variance()
 
     assert(fequal(upo_store_sample_variance(store), 9.166667));
 
-    upo_store_destroy(store);
+    upo_store_destroy(&store);
 
     store = upo_store_create();
 
@@ -139,7 +143,7 @@ void test_variance()
 
     assert(fequal(upo_store_sample_variance(store), 28.0));
 
-    upo_store_destroy(store);
+    upo_store_destroy(&store);
 }
 
 bool fequal(double a, double b)

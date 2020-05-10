@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <netdb.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -9,22 +8,20 @@
 
 #define MAX 512
 
-void func(int sockfd)
+void program(int socket)
 {
-    char buff[MAX];
-    int n;
-    read(sockfd, buff, sizeof(buff));
-    printf("%s\n", buff);
+    char input[MAX];
+    char output[MAX];
     while (1)
     {
-        bzero(buff, sizeof(buff));
-        n = 0;
-        while ((buff[n++] = getchar()) != '\n')
+        memset(input, '\0', MAX);
+        memset(output, '\0', MAX);
+        read(socket, input, sizeof(input));
+        printf("%s", input);
+        int n = 0;
+        while ((output[n++] = getchar()) != '\n')
             ;
-        write(sockfd, buff, sizeof(buff));
-        bzero(buff, sizeof(buff));
-        read(sockfd, buff, sizeof(buff));
-        printf("%s", buff);
+        write(socket, output, sizeof(output));
     }
 }
 
@@ -56,10 +53,8 @@ int main(int argc, char *argv[])
 
     /* setup the address structure */
     /* use the IP address sent as an argument for the server address  */
-    //bzero(&simpleServer, sizeof(simpleServer));
     memset(&serverAddress, '\0', sizeof(serverAddress));
     serverAddress.sin_family = AF_INET;
-    //inet_addr(argv[2], &simpleServer.sin_addr.s_addr);
     serverAddress.sin_addr.s_addr = inet_addr(argv[1]);
     serverAddress.sin_port = htons(port);
 
@@ -77,7 +72,7 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    func(clientSocket);
+    program(clientSocket);
     close(clientSocket);
     return 0;
 }

@@ -15,19 +15,18 @@ upo_store_t upo_store_create()
     return store;
 }
 
-void upo_store_destroy(upo_store_t store)
+void upo_store_destroy(upo_store_t *store)
 {
-    if (store != NULL)
+    if (store != NULL && *store != NULL)
     {
-        while (store->top != NULL)
+        while ((*store)->top != NULL)
         {
-            upo_store_node_t *node = store->top;
-            store->top = store->top->next;
+            upo_store_node_t *node = (*store)->top;
+            (*store)->top = (*store)->top->next;
             free(node);
         }
-        store->top = NULL;
-        store->size = 0;
-        free(store);
+        free(*store);
+        *store = NULL;
     }
 }
 
