@@ -1,1 +1,1 @@
-test_targets += test_store test_protocol
+test_targets += test_store test_protocol test_splitter

@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdbool.h>
+#include <ctype.h>
 #include <arpa/inet.h>
 #include <upo/protocol.h>
 
@@ -36,6 +38,17 @@ upo_protocol_response_t parse(char *input)
     return INVALID;
 }
 
+bool isValidFile(char *input)
+{
+    int i = 0;
+    while (input[i] != '\0')
+    {
+        if (!isdigit(input[i]) || !isspace(input[i]))
+            return false;
+    }
+    return true;
+}
+
 void program(int socket)
 {
     char delim[] = " \n";
@@ -54,6 +67,44 @@ void program(int socket)
         case OK_START:
             printf("%s", &input[9]);
             printf("=====\nTODO: Descrizione delle modalità di utilizzo\n('q' per uscire o path di un file di numeri separati da spazi da mandare al server)\n=====\n");
+            int error;
+            do
+            {
+                error = 0;
+                int n = 0;
+                while ((client[n++] = getchar()) != '\n')
+                    ;
+
+                char *client_input = strtok(client, delim);
+                if (strcmp(client_input, "q") == 0)
+                {
+                    printf("Arrivederci\n");
+                    return;
+                }
+                FILE *file = fopen(client_input, "r");
+                if (file == NULL)
+                {
+                    printf("Impossibile accedere al file\n");
+                    error = 1;
+                    continue;
+                }
+                fseek(file, 0, SEEK_END);
+                long fsize = ftell(file);
+                fseek(file, 0, SEEK_SET);
+
+                char *numbers = malloc(fsize + 1);
+                fread(numbers, 1, fsize, file);
+                fclose(file);
+
+                numbers[fsize] = 0;
+                printf("DEBUG: %s\n", numbers);
+                if (!isValidFile(numbers))
+                {
+                    printf("Il file contiene dati non corretti. Sono ammessi solo numeri interi positivi separati da spazi\n");
+                    error = 1;
+                    continue;
+                }
+            } while (error);
             break;
         case OK_DATA:
             printf("%s", &input[8]);
@@ -80,39 +131,6 @@ void program(int socket)
         default:
             break;
         }
-        int error;
-        do
-        {
-            error = 0;
-            int n = 0;
-            while ((client[n++] = getchar()) != '\n')
-                ;
-
-            char *client_input = strtok(client, delim);
-            if (strcmp(client_input, "q") == 0)
-            {
-                printf("Arrivederci\n");
-                return;
-            }
-            FILE *file = fopen(client_input, "r");
-            if (file == NULL)
-            {
-                printf("Impossibile accedere al file\n");
-                error = 1;
-                continue;
-            }
-            fseek(file, 0, SEEK_END);
-            long fsize = ftell(file);
-            fseek(file, 0, SEEK_SET);
-
-            char *numbers = malloc(fsize + 1);
-            fread(numbers, 1, fsize, file);
-            fclose(file);
-
-            numbers[fsize] = 0;
-            printf("DEBUG: %s\n", numbers);
-        } while (error);
-
         write(socket, output, sizeof(output));
     }
 }
