@@ -15,11 +15,13 @@
 /** \brief Declares the possible type of output of the protocol */
 typedef enum
 {
+    OK_START,
     OK_DATA,
     OK_STATS,
     ERR_SYNTAX,
     ERR_DATA,
-    ERR_STATS
+    ERR_STATS,
+    INVALID
 } upo_protocol_response_t;
 
 /**

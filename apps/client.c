@@ -5,22 +5,114 @@
 #include <string.h>
 #include <unistd.h>
 #include <arpa/inet.h>
+#include <upo/protocol.h>
 
-#define MAX 512
+upo_protocol_response_t parse(char *input)
+{
+    char delim[] = " \n";
+    char input_copy[UPO_PROTOCOL_MAX];
+    strcpy(input_copy, input);
+
+    char *status = strtok(input_copy, delim);
+    if (status == NULL)
+        return INVALID;
+
+    char *type = strtok(NULL, delim);
+    if (type == NULL)
+        return INVALID;
+
+    if (strcmp(status, "OK") == 0 && strcmp(type, "START") == 0)
+        return OK_START;
+    if (strcmp(status, "OK") == 0 && strcmp(type, "DATA") == 0)
+        return OK_DATA;
+    if (strcmp(status, "OK") == 0 && strcmp(type, "STATS") == 0)
+        return OK_STATS;
+    if (strcmp(status, "ERR") == 0 && strcmp(type, "DATA") == 0)
+        return ERR_DATA;
+    if (strcmp(status, "ERR") == 0 && strcmp(type, "STATS") == 0)
+        return ERR_STATS;
+    if (strcmp(status, "ERR") == 0 && strcmp(type, "SYNTAX") == 0)
+        return ERR_SYNTAX;
+    return INVALID;
+}
 
 void program(int socket)
 {
-    char input[MAX];
-    char output[MAX];
+    char delim[] = " \n";
+    char input[UPO_PROTOCOL_MAX];
+    char client[UPO_PROTOCOL_MAX];
+    char output[UPO_PROTOCOL_MAX];
     while (1)
     {
-        memset(input, '\0', MAX);
-        memset(output, '\0', MAX);
+        memset(input, '\0', UPO_PROTOCOL_MAX);
+        memset(client, '\0', UPO_PROTOCOL_MAX);
+        memset(output, '\0', UPO_PROTOCOL_MAX);
         read(socket, input, sizeof(input));
-        printf("%s", input);
-        int n = 0;
-        while ((output[n++] = getchar()) != '\n')
-            ;
+        upo_protocol_response_t response = parse(input);
+        switch (response)
+        {
+        case OK_START:
+            printf("%s", &input[9]);
+            printf("=====\nTODO: Descrizione delle modalità di utilizzo\n('q' per uscire o path di un file di numeri separati da spazi da mandare al server)\n=====\n");
+            break;
+        case OK_DATA:
+            printf("%s", &input[8]);
+            break;
+        case OK_STATS:
+            printf("%s", &input[9]);
+            return;
+        case ERR_DATA:
+            printf("Errori dati da parte del server:\n");
+            printf("%s", &input[9]);
+            return;
+        case ERR_STATS:
+            printf("Errori di calcolo statistiche da parte del server:\n");
+            printf("%s", &input[10]);
+            return;
+        case ERR_SYNTAX:
+            printf("Errori di sintassi da parte del server:\n");
+            printf("%s", &input[11]);
+            return;
+        case INVALID:
+            printf("Qualcosa è andato storto in maniera imprefista\n");
+            printf("%s\n", input);
+            return;
+        default:
+            break;
+        }
+        int error;
+        do
+        {
+            error = 0;
+            int n = 0;
+            while ((client[n++] = getchar()) != '\n')
+                ;
+
+            char *client_input = strtok(client, delim);
+            if (strcmp(client_input, "q") == 0)
+            {
+                printf("Arrivederci\n");
+                return;
+            }
+            FILE *file = fopen(client_input, "r");
+            if (file == NULL)
+            {
+                printf("Impossibile accedere al file\n");
+                error = 1;
+                continue;
+            }
+            fseek(file, 0, SEEK_END);
+            long fsize = ftell(file);
+            fseek(file, 0, SEEK_SET);
+
+            char *numbers = malloc(fsize + 1);
+            fread(numbers, 1, fsize, file);
+            fclose(file);
+
+            numbers[fsize] = 0;
+            printf("DEBUG: %s\n", numbers);
+        } while (error);
+
         write(socket, output, sizeof(output));
     }
 }
@@ -43,10 +135,6 @@ int main(int argc, char *argv[])
         fprintf(stderr, "Could not create a socket!\n");
         exit(1);
     }
-    else
-    {
-        fprintf(stderr, "Socket created!\n");
-    }
 
     /* retrieve the port number for connecting */
     int port = atoi(argv[2]);
@@ -61,11 +149,7 @@ int main(int argc, char *argv[])
     /*  connect to the address and port with our socket  */
     int connectStatus = connect(clientSocket, (struct sockaddr *)&serverAddress, sizeof(serverAddress));
 
-    if (connectStatus == 0)
-    {
-        fprintf(stderr, "Connect successful!\n");
-    }
-    else
+    if (connectStatus != 0)
     {
         fprintf(stderr, "Could not connect to address!\n");
         close(clientSocket);

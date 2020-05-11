@@ -45,10 +45,6 @@ int main(int argc, char *argv[])
         fprintf(stderr, "Could not create a socket!\n");
         exit(1);
     }
-    else
-    {
-        fprintf(stderr, "Socket created!\n");
-    }
 
     /* retrieve the port number for listening */
     int port = atoi(argv[1]);
@@ -68,10 +64,6 @@ int main(int argc, char *argv[])
         fprintf(stderr, "Could not bind to address!\n");
         close(serverSocket);
         exit(1);
-    }
-    else
-    {
-        fprintf(stderr, "Bind completed!\n");
     }
 
     /* lets listen on the socket for connections      */
