@@ -102,19 +102,19 @@ void program(int socket)
             printf("%s", &input[9]);
             return;
         case ERR_DATA:
-            printf("Errori dati da parte del server:\n");
+            printf("Errore dati da parte del server:\n");
             printf("%s", &input[9]);
             return;
         case ERR_STATS:
-            printf("Errori di calcolo statistiche da parte del server:\n");
+            printf("Errore di calcolo statistiche da parte del server:\n");
             printf("%s", &input[10]);
             return;
         case ERR_SYNTAX:
-            printf("Errori di sintassi da parte del server:\n");
+            printf("Errore di sintassi da parte del server:\n");
             printf("%s", &input[11]);
             return;
         case INVALID:
-            printf("Qualcosa è andato storto in maniera imprefista\n");
+            printf("Qualcosa è andato storto in maniera imprevista:\n");
             printf("%s\n", input);
             return;
         default:

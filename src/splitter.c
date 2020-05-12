@@ -63,11 +63,8 @@ void upo_protocol_splitter_next(upo_protocol_splitter_t splitter, char *output, 
 
 bool is_valid_input(char *input)
 {
-    int i = 0;
-    while (input[i] != '\0')
-    {
-        if (!isdigit(input[i]) || !isspace(input[i]))
+    for (int i = 0; input[i] != '\0'; i++)
+        if (!isdigit(input[i]) && !isspace(input[i]))
             return false;
-    }
     return true;
 }
