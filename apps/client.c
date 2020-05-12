@@ -90,6 +90,7 @@ void program(int socket)
                     continue;
                 }
             } while (error);
+            upo_protocol_splitter_next(splitter, output, UPO_PROTOCOL_MAX);
             write(socket, output, sizeof(output));
             break;
         case OK_DATA:
@@ -134,7 +135,6 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    /* create a streaming socket      */
     int clientSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
     if (clientSocket == -1)
@@ -143,17 +143,13 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    /* retrieve the port number for connecting */
     int port = atoi(argv[2]);
 
-    /* setup the address structure */
-    /* use the IP address sent as an argument for the server address  */
     memset(&serverAddress, '\0', sizeof(serverAddress));
     serverAddress.sin_family = AF_INET;
     serverAddress.sin_addr.s_addr = inet_addr(argv[1]);
     serverAddress.sin_port = htons(port);
 
-    /*  connect to the address and port with our socket  */
     int connectStatus = connect(clientSocket, (struct sockaddr *)&serverAddress, sizeof(serverAddress));
 
     if (connectStatus != 0)
