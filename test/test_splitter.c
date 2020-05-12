@@ -56,10 +56,14 @@ void test_next(const char *arg0)
     get_resource("../data/example.txt", arg0, resource);
     upo_protocol_splitter_t splitter = upo_protocol_splitter_create(resource);
 
-    char output[100] = {0};
-    upo_protocol_splitter_next(splitter, output, 100);
+    char output[30] = {0};
+    upo_protocol_splitter_next(splitter, output, 30);
 
     assert(strcmp(output, "10 1 2 3 4 5 6 7 8 9 10\n") == 0);
+
+    upo_protocol_splitter_next(splitter, output, 30);
+
+    assert(strcmp(output, "0\n") == 0);
 
     upo_protocol_splitter_destroy(&splitter);
 }

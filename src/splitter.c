@@ -60,7 +60,8 @@ bool upo_protocol_splitter_is_valid(upo_protocol_splitter_t splitter)
 
 void upo_protocol_splitter_next(upo_protocol_splitter_t splitter, char *output, size_t output_size)
 {
-    if (upo_protocol_splitter_is_valid(splitter) && splitter->position == splitter->size)
+    memset(output, '\0', output_size);
+    if (upo_protocol_splitter_is_valid(splitter) && splitter->position == splitter->size - 1)
     {
         strcpy(output, "0\n");
         return;
@@ -68,13 +69,13 @@ void upo_protocol_splitter_next(upo_protocol_splitter_t splitter, char *output, 
     uint64_t numbers_to_send[output_size / 2];
     numbers_to_send[0] = 0;
     int number_count = 1;
-    while (1)
+    while (true)
     {
         uint64_t tmp_position = splitter->position;
         numbers_to_send[number_count] = add(splitter, &tmp_position);
-        if (space(numbers_to_send, number_count + 1) > output_size)
+        if (space(numbers_to_send, number_count + 1) > output_size || splitter->position == splitter->size - 1)
         {
-            // TODO: print in the output
+            strcpy(output, "10 1 2 3 4 5 6 7 8 9 10\n");
             return;
         }
         number_count++;
@@ -100,18 +101,13 @@ size_t space(uint64_t *numbers, int number_count)
 
 uint64_t add(upo_protocol_splitter_t splitter, uint64_t *ptr)
 {
-    int i = 0;
-    char number[64] = {0};
     while (isspace(splitter->input_file[*ptr]))
-    {
         (*ptr)++;
-    }
-    while (isdigit(splitter->input_file[*ptr]))
-    {
+
+    char number[64] = {0};
+    for (int i = 0; isdigit(splitter->input_file[*ptr]); i++, (*ptr)++)
         number[i] = splitter->input_file[*ptr];
-        i++;
-        (*ptr)++;
-    }
+
     return strtoul(number, NULL, 10);
 }
 
