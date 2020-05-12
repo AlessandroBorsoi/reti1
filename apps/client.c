@@ -8,6 +8,7 @@
 #include <ctype.h>
 #include <arpa/inet.h>
 #include <upo/protocol.h>
+#include <upo/splitter.h>
 
 upo_protocol_response_t parse(char *input)
 {
@@ -38,23 +39,14 @@ upo_protocol_response_t parse(char *input)
     return INVALID;
 }
 
-bool isValidFile(char *input)
-{
-    int i = 0;
-    while (input[i] != '\0')
-    {
-        if (!isdigit(input[i]) || !isspace(input[i]))
-            return false;
-    }
-    return true;
-}
-
 void program(int socket)
 {
     char delim[] = " \n";
     char input[UPO_PROTOCOL_MAX];
     char client[UPO_PROTOCOL_MAX];
     char output[UPO_PROTOCOL_MAX];
+    upo_protocol_splitter_t splitter;
+
     while (1)
     {
         memset(input, '\0', UPO_PROTOCOL_MAX);
@@ -81,35 +73,32 @@ void program(int socket)
                     printf("Arrivederci\n");
                     return;
                 }
-                FILE *file = fopen(client_input, "r");
-                if (file == NULL)
+
+                splitter = upo_protocol_splitter_create(client_input);
+
+                if (splitter == NULL)
                 {
                     printf("Impossibile accedere al file\n");
                     error = 1;
                     continue;
                 }
-                fseek(file, 0, SEEK_END);
-                long fsize = ftell(file);
-                fseek(file, 0, SEEK_SET);
 
-                char *numbers = malloc(fsize + 1);
-                fread(numbers, 1, fsize, file);
-                fclose(file);
-
-                numbers[fsize] = 0;
-                printf("DEBUG: %s\n", numbers);
-                if (!isValidFile(numbers))
+                if (!upo_protocol_splitter_is_valid(splitter))
                 {
                     printf("Il file contiene dati non corretti. Sono ammessi solo numeri interi positivi separati da spazi\n");
                     error = 1;
                     continue;
                 }
             } while (error);
+            write(socket, output, sizeof(output));
             break;
         case OK_DATA:
+            upo_protocol_splitter_next(splitter, output, UPO_PROTOCOL_MAX);
             printf("%s", &input[8]);
+            write(socket, output, sizeof(output));
             break;
         case OK_STATS:
+            printf("TODO: Pretty print dei risultati\n");
             printf("%s", &input[9]);
             return;
         case ERR_DATA:
@@ -129,10 +118,10 @@ void program(int socket)
             printf("%s\n", input);
             return;
         default:
-            break;
+            return;
         }
-        write(socket, output, sizeof(output));
     }
+    upo_protocol_splitter_destroy(&splitter);
 }
 
 int main(int argc, char *argv[])

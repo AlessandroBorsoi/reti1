@@ -21,4 +21,20 @@ void test_create_destroy()
     assert(splitter == NULL);
 
     upo_protocol_splitter_destroy(&splitter);
+
+    splitter = upo_protocol_splitter_create("test_splitter.c");
+
+    assert(splitter != NULL);
+
+    assert(!upo_protocol_splitter_is_valid(splitter));
+
+    upo_protocol_splitter_destroy(&splitter);
+
+    splitter = upo_protocol_splitter_create("/Users/aborsoi/formazione/reti1/data/example.txt");
+
+    assert(splitter != NULL);
+
+    assert(upo_protocol_splitter_is_valid(splitter));
+
+    upo_protocol_splitter_destroy(&splitter);
 }
