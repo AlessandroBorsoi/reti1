@@ -111,8 +111,16 @@ void test_next_with_big_example_txt(const char *arg0)
 
     char output[512] = {0};
 
+    int i = 0;
     while (strcmp(output, "0\n") != 0)
+    {
         upo_protocol_splitter_next(splitter, output, 512);
+        i++;
+        if (i == 13669)
+            assert(strcmp(output, "14 999987 999988 999989 999990 999991 999992 999993 999994 999995 999996 999997 999998 999999 1000000\n") == 0);
+        }
+
+    assert(i == 13670);
 
     upo_protocol_splitter_destroy(&splitter);
 
