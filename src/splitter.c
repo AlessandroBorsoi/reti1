@@ -75,9 +75,16 @@ void upo_protocol_splitter_next(upo_protocol_splitter_t splitter, char *output, 
         numbers_to_send[number_count] = add(splitter, &tmp_position);
         if (space(numbers_to_send, number_count + 1) > output_size || splitter->position == splitter->size - 1)
         {
-            strcpy(output, "10 1 2 3 4 5 6 7 8 9 10\n");
+            for (int i = 0, index = 0; i < number_count; i++)
+            {
+                if (i == number_count - 1)
+                    index += sprintf(&output[index], "%llu\n", numbers_to_send[i]);
+                else
+                    index += sprintf(&output[index], "%llu ", numbers_to_send[i]);
+            }
             return;
         }
+        numbers_to_send[0] = number_count;
         number_count++;
         splitter->position = tmp_position;
     }
@@ -94,7 +101,7 @@ size_t space(uint64_t *numbers, int number_count)
             count_size++;
             n /= 10;
         }
-        count_size++; // plus 1 for the space after or for the final \n
+        count_size++; // plus 1 for the space after the number or for the final \n
     }
     return count_size;
 }

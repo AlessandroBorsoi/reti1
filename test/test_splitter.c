@@ -66,6 +66,31 @@ void test_next(const char *arg0)
     assert(strcmp(output, "0\n") == 0);
 
     upo_protocol_splitter_destroy(&splitter);
+
+    assert(splitter == NULL);
+
+    splitter = upo_protocol_splitter_create(resource);
+
+    assert(splitter != NULL);
+
+    char output2[10] = {0};
+    upo_protocol_splitter_next(splitter, output2, 10);
+
+    assert(strcmp(output2, "4 1 2 3 4\n") == 0);
+
+    upo_protocol_splitter_next(splitter, output2, 10);
+
+    assert(strcmp(output2, "4 5 6 7 8\n") == 0);
+
+    upo_protocol_splitter_next(splitter, output2, 10);
+
+    assert(strcmp(output2, "2 9 10\n") == 0);
+
+    upo_protocol_splitter_next(splitter, output2, 10);
+
+    assert(strcmp(output2, "0\n") == 0);
+
+    upo_protocol_splitter_destroy(&splitter);
 }
 
 void get_resource(char *res_path, const char *argv0, char *buffer)
