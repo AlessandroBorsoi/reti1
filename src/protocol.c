@@ -16,7 +16,7 @@ upo_protocol_response_t upo_protocol(upo_store_t store, const char *input, char 
 {
     errno = 0;
     char delim[] = " \n";
-    char input_copy[UPO_PROTOCOL_MAX];
+    char input_copy[UPO_PROTOCOL_MAX + 1];
     strcpy(input_copy, input);
 
     char *token = strtok(input_copy, delim);

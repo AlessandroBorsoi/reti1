@@ -116,7 +116,7 @@ void program(int socket)
             return;
         case INVALID:
             printf("Qualcosa è andato storto in maniera imprevista:\n");
-            printf("%s\n", input);
+            printf("==%s||\n", input);
             return;
         default:
             return;

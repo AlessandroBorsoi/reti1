@@ -10,15 +10,15 @@ const char WELCOME[] = "OK START Benvenuto, mandami i tuoi dati\n";
 void program(int socket)
 {
     upo_store_t store = upo_store_create();
-    char input[UPO_PROTOCOL_MAX];
+    char input[UPO_PROTOCOL_MAX + 1];
     char output[UPO_PROTOCOL_MAX];
 
     write(socket, WELCOME, sizeof(WELCOME));
     while (1)
     {
-        memset(input, '\0', UPO_PROTOCOL_MAX);
+        memset(input, '\0', UPO_PROTOCOL_MAX + 1);
         memset(output, '\0', UPO_PROTOCOL_MAX);
-        read(socket, input, sizeof(input));
+        read(socket, input, sizeof(input) - 1);
         upo_protocol_response_t response = upo_protocol(store, input, output);
         write(socket, output, sizeof(output));
         if (response != OK_DATA)
