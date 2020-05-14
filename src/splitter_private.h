@@ -4,7 +4,7 @@
 
 struct upo_protocol_splitter_s
 {
-    char *input_file;
+    uint64_t *numbers;
     size_t size;
-    uint64_t position;
+    size_t current;
 };

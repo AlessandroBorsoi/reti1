@@ -14,6 +14,7 @@ static void clean_file(char *resource);
 
 int main(int argc, char const *argv[])
 {
+    (void)argc; // To silence compiler warning: unused parameter 'argc' [-Wunused-parameter]
     printf("Test case 'create/destroy'... ");
     fflush(stdout);
     test_create_destroy(argv[0]);
@@ -80,6 +81,7 @@ void test_next_with_example_txt(const char *arg0)
     char output2[10] = {0};
     upo_protocol_splitter_next(splitter, output2, 10);
 
+    fprintf(stderr, "%s", output);
     assert(strcmp(output2, "4 1 2 3 4\n") == 0);
 
     upo_protocol_splitter_next(splitter, output2, 10);
@@ -118,7 +120,7 @@ void test_next_with_big_example_txt(const char *arg0)
         i++;
         if (i == 13669)
             assert(strcmp(output, "14 999987 999988 999989 999990 999991 999992 999993 999994 999995 999996 999997 999998 999999 1000000\n") == 0);
-        }
+    }
 
     assert(i == 13670);
 

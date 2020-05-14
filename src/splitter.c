@@ -4,9 +4,10 @@
 #include <ctype.h>
 #include <string.h>
 
-static bool is_valid_input(char *input);
-static size_t space(uint64_t *numbers, int number_count);
-static uint64_t add(upo_protocol_splitter_t splitter, uint64_t *ptr);
+static bool is_valid_input(const char *input);
+static int get_number_count(const char *input, int file_size);
+static upo_protocol_splitter_t create(char *input, int file_size);
+static int numbers_to_send(const upo_protocol_splitter_t splitter, const size_t output_size);
 
 upo_protocol_splitter_t upo_protocol_splitter_create(char *file_path)
 {
@@ -18,23 +19,14 @@ upo_protocol_splitter_t upo_protocol_splitter_create(char *file_path)
     long file_size = ftell(file);
     fseek(file, 0, SEEK_SET);
 
-    char *numbers = malloc(file_size + 1);
-    fread(numbers, 1, file_size, file);
+    char *input = malloc(file_size + 1);
+    fread(input, 1, file_size, file);
     fclose(file);
-    numbers[file_size] = 0;
+    input[file_size] = 0;
 
-    upo_protocol_splitter_t splitter = malloc(sizeof(struct upo_protocol_splitter_s));
-    if (is_valid_input(numbers))
-    {
-        splitter->input_file = numbers;
-    }
-    else
-    {
-        splitter->input_file = NULL;
-        free(numbers);
-    }
-    splitter->size = file_size + 1;
-    splitter->position = 0;
+    upo_protocol_splitter_t splitter = create(input, file_size + 1);
+
+    free(input);
     return splitter;
 }
 
@@ -43,9 +35,9 @@ void upo_protocol_splitter_destroy(upo_protocol_splitter_t *splitter)
     if (splitter != NULL && *splitter != NULL)
     {
         (*splitter)->size = 0;
-        (*splitter)->position = 0;
+        (*splitter)->current = 0;
         if (upo_protocol_splitter_is_valid(*splitter))
-            free((*splitter)->input_file);
+            free((*splitter)->numbers);
         free(*splitter);
         (*splitter) = NULL;
     }
@@ -54,71 +46,99 @@ void upo_protocol_splitter_destroy(upo_protocol_splitter_t *splitter)
 bool upo_protocol_splitter_is_valid(upo_protocol_splitter_t splitter)
 {
     if (splitter != NULL)
-        return splitter->input_file != NULL;
+        return splitter->numbers != NULL;
     return false;
 }
 
 void upo_protocol_splitter_next(upo_protocol_splitter_t splitter, char *output, size_t output_size)
 {
     memset(output, '\0', output_size);
-    if (upo_protocol_splitter_is_valid(splitter) && splitter->position == splitter->size - 1)
+    if (upo_protocol_splitter_is_valid(splitter) && splitter->current == splitter->size)
     {
         strcpy(output, "0\n");
         return;
     }
-    uint64_t numbers_to_send[output_size / 2];
-    numbers_to_send[0] = 0;
-    int number_count = 1;
-    while (true)
-    {
-        uint64_t tmp_position = splitter->position;
-        numbers_to_send[number_count] = add(splitter, &tmp_position);
-        if (space(numbers_to_send, number_count + 1) > output_size || splitter->position == splitter->size - 1)
-        {
-            for (int i = 0, index = 0; i < number_count; i++)
-            {
-                if (i == number_count - 1)
-                    index += sprintf(&output[index], "%llu\n", numbers_to_send[i]);
-                else
-                    index += sprintf(&output[index], "%llu ", numbers_to_send[i]);
-            }
-            return;
-        }
-        numbers_to_send[0] = number_count;
-        number_count++;
-        splitter->position = tmp_position;
-    }
+
+    int to_send = numbers_to_send(splitter, output_size);
+
+    int index = 0;
+    index += sprintf(&output[index], "%d ", to_send);
+    int start = splitter->current;
+    int end = start + to_send;
+    for (int i = start; i < end; i++)
+        if (i == end - 1)
+            index += sprintf(&output[index], "%llu\n", splitter->numbers[i]);
+        else
+            index += sprintf(&output[index], "%llu ", splitter->numbers[i]);
+    splitter->current = end;
 }
 
-size_t space(uint64_t *numbers, int number_count)
+int get_number_count(const char *input, int file_size)
 {
-    int count_size = 0;
-    for (int i = 0; i < number_count; i++)
+    int count = 0;
+    for (int i = 0; i < file_size; i++)
     {
-        uint64_t n = numbers[i];
-        while (n != 0)
+        if (isdigit(input[i]))
         {
-            count_size++;
-            n /= 10;
+            count++;
+            while (isdigit(input[i]))
+                i++;
         }
-        count_size++; // plus 1 for the space after the number or for the final \n
     }
-    return count_size;
+    return count;
 }
 
-uint64_t add(upo_protocol_splitter_t splitter, uint64_t *ptr)
+upo_protocol_splitter_t create(char *input, int file_size)
 {
-    while (isspace(splitter->input_file[*ptr]))
-        (*ptr)++;
+    upo_protocol_splitter_t splitter = malloc(sizeof(struct upo_protocol_splitter_s));
+    splitter->numbers = NULL;
+    splitter->size = 0;
+    splitter->current = 0;
+    if (is_valid_input(input))
+    {
+        int count = get_number_count(input, file_size);
+        splitter->numbers = malloc(count * sizeof(uint64_t));
+        splitter->size = count;
 
-    char number[64] = {0};
-    for (int i = 0; isdigit(splitter->input_file[*ptr]); i++, (*ptr)++)
-        number[i] = splitter->input_file[*ptr];
-
-    return strtoul(number, NULL, 10);
+        int i = 0;
+        char *delim = " \n";
+        char *token = strtok(input, delim);
+        while (token != NULL)
+        {
+            splitter->numbers[i] = strtoul(token, NULL, 10);
+            token = strtok(NULL, delim);
+            i++;
+        }
+    }
+    return splitter;
 }
 
-bool is_valid_input(char *input)
+int digits(uint64_t n)
+{
+    int digits = 1;
+    while (n > 9)
+    {
+        n /= 10;
+        digits++;
+    }
+    return digits;
+}
+
+int numbers_to_send(const upo_protocol_splitter_t splitter, const size_t output_size)
+{
+    int to_send = 0;
+    size_t buffer_size = 0;
+    int i = splitter->current;
+    while (buffer_size + digits(to_send) <= output_size && to_send < splitter->size)
+    {
+        to_send++;
+        buffer_size += digits(splitter->numbers[i]);
+        i++;
+    }
+    return to_send;
+}
+
+bool is_valid_input(const char *input)
 {
     for (int i = 0; input[i] != '\0'; i++)
         if (!isdigit(input[i]) && !isspace(input[i]))
