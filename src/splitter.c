@@ -7,7 +7,7 @@
 static bool is_valid_input(const char *input);
 static int get_number_count(const char *input, int file_size);
 static upo_protocol_splitter_t create(char *input, int file_size);
-static int numbers_to_send(const upo_protocol_splitter_t splitter, const size_t output_size);
+static size_t numbers_to_send(const upo_protocol_splitter_t splitter, const size_t output_size);
 
 upo_protocol_splitter_t upo_protocol_splitter_create(char *file_path)
 {
@@ -53,19 +53,17 @@ bool upo_protocol_splitter_is_valid(upo_protocol_splitter_t splitter)
 void upo_protocol_splitter_next(upo_protocol_splitter_t splitter, char *output, size_t output_size)
 {
     memset(output, '\0', output_size);
-    if (upo_protocol_splitter_is_valid(splitter) && splitter->current == splitter->size)
+    size_t to_send = numbers_to_send(splitter, output_size);
+    size_t index = 0;
+    if (to_send == 0)
     {
         strcpy(output, "0\n");
         return;
     }
-
-    int to_send = numbers_to_send(splitter, output_size);
-
-    int index = 0;
-    index += sprintf(&output[index], "%d ", to_send);
-    int start = splitter->current;
-    int end = start + to_send;
-    for (int i = start; i < end; i++)
+    index += sprintf(&output[index], "%zu ", to_send);
+    size_t start = splitter->current;
+    size_t end = start + to_send;
+    for (size_t i = start; i < end; i++)
         if (i == end - 1)
             index += sprintf(&output[index], "%llu\n", splitter->numbers[i]);
         else
@@ -124,16 +122,18 @@ int digits(uint64_t n)
     return digits;
 }
 
-int numbers_to_send(const upo_protocol_splitter_t splitter, const size_t output_size)
+size_t numbers_to_send(const upo_protocol_splitter_t splitter, const size_t output_size)
 {
-    int to_send = 0;
-    size_t buffer_size = 0;
-    int i = splitter->current;
-    while (buffer_size + digits(to_send) <= output_size && to_send < splitter->size)
+    size_t to_send = 0;
+    for (size_t i = splitter->current, buffer_size = 0; i < splitter->size; i++, to_send++)
     {
-        to_send++;
-        buffer_size += digits(splitter->numbers[i]);
-        i++;
+        if (buffer_size + digits(to_send) + 1 == output_size)
+            return to_send;
+        if (buffer_size + digits(to_send) + 1 > output_size)
+            return to_send - 1;
+        buffer_size += digits(splitter->numbers[i]) + 1; // +1 for the space
+        //fprintf(stderr, "to_send: %zu\n", to_send + 1);
+        //fprintf(stderr, "buffer_size: %zu\n", buffer_size);
     }
     return to_send;
 }

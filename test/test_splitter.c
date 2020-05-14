@@ -8,6 +8,7 @@ char resource[512];
 static void test_create_destroy(const char *arg0);
 static void test_next_with_example_txt(const char *arg0);
 static void test_next_with_big_example_txt(const char *arg0);
+static void test_next_test_txt(const char *arg0);
 static void get_resource(char *resource, const char *argv0, char *buffer);
 static void populate_file(char *resource);
 static void clean_file(char *resource);
@@ -24,6 +25,7 @@ int main(int argc, char const *argv[])
     fflush(stdout);
     test_next_with_example_txt(argv[0]);
     test_next_with_big_example_txt(argv[0]);
+    test_next_test_txt(argv[0]);
     printf("OK\n");
 
     return 0;
@@ -81,7 +83,6 @@ void test_next_with_example_txt(const char *arg0)
     char output2[10] = {0};
     upo_protocol_splitter_next(splitter, output2, 10);
 
-    fprintf(stderr, "%s", output);
     assert(strcmp(output2, "4 1 2 3 4\n") == 0);
 
     upo_protocol_splitter_next(splitter, output2, 10);
@@ -127,6 +128,26 @@ void test_next_with_big_example_txt(const char *arg0)
     upo_protocol_splitter_destroy(&splitter);
 
     clean_file(resource);
+}
+
+void test_next_test_txt(const char *arg0)
+{
+    get_resource("../data/test.txt", arg0, resource);
+    upo_protocol_splitter_t splitter = upo_protocol_splitter_create(resource);
+
+    char output[512] = {0};
+    upo_protocol_splitter_next(splitter, output, 512);
+    fprintf(stderr, "%s", output);
+    upo_protocol_splitter_next(splitter, output, 512);
+
+    fprintf(stderr, "%s", output);
+    assert(strcmp(output, "1 1035\n") == 0);
+
+    upo_protocol_splitter_next(splitter, output, 512);
+
+    assert(strcmp(output, "0\n") == 0);
+
+    upo_protocol_splitter_destroy(&splitter);
 }
 
 void get_resource(char *resource, const char *argv0, char *buffer)
