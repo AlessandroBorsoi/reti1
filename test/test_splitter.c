@@ -137,10 +137,8 @@ void test_next_test_txt(const char *arg0)
 
     char output[512] = {0};
     upo_protocol_splitter_next(splitter, output, 512);
-    fprintf(stderr, "%s", output);
     upo_protocol_splitter_next(splitter, output, 512);
 
-    fprintf(stderr, "%s", output);
     assert(strcmp(output, "1 1035\n") == 0);
 
     upo_protocol_splitter_next(splitter, output, 512);

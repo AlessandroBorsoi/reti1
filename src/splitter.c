@@ -125,17 +125,19 @@ int digits(uint64_t n)
 size_t numbers_to_send(const upo_protocol_splitter_t splitter, const size_t output_size)
 {
     size_t to_send = 0;
-    for (size_t i = splitter->current, buffer_size = 0; i < splitter->size; i++, to_send++)
+    size_t buffer_size = 0;
+    size_t i = splitter->current;
+    while (i < splitter->size)
     {
         if (buffer_size + digits(to_send) + 1 == output_size)
             return to_send;
         if (buffer_size + digits(to_send) + 1 > output_size)
             return to_send - 1;
         buffer_size += digits(splitter->numbers[i]) + 1; // +1 for the space
-        //fprintf(stderr, "to_send: %zu\n", to_send + 1);
-        //fprintf(stderr, "buffer_size: %zu\n", buffer_size);
+        i++;
+        to_send++;
     }
-    return to_send;
+    return buffer_size + digits(to_send) + 1 > output_size ? to_send - 1 : to_send;
 }
 
 bool is_valid_input(const char *input)
