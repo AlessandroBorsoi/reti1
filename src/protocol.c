@@ -7,10 +7,7 @@
 #include <inttypes.h>
 #include <upo/server/protocol.h>
 
-static bool is_invalid_number(char *str, uint64_t number, char *endptr)
-{
-    return str == endptr || errno != 0 || number == ULONG_MAX || (errno == 0 && str && *endptr != 0);
-}
+static bool is_invalid_number(char *str, uint64_t number, char *endptr);
 
 upo_protocol_response_t upo_protocol(upo_store_t store, const char *input, char *output)
 {
@@ -19,6 +16,7 @@ upo_protocol_response_t upo_protocol(upo_store_t store, const char *input, char 
     char input_copy[UPO_PROTOCOL_MAX + 1];
     strcpy(input_copy, input);
 
+    // Check for empty message
     char *token = strtok(input_copy, delim);
     if (token == NULL)
     {
@@ -26,12 +24,15 @@ upo_protocol_response_t upo_protocol(upo_store_t store, const char *input, char 
         return ERR_SYNTAX;
     }
 
+    // Check for not terminated message
     char *terminator = strchr(input, '\n');
     if (terminator == NULL)
     {
         strcpy(output, "ERR SYNTAX Mancanza del carattere di terminazione\n");
         return ERR_SYNTAX;
     }
+
+    // Check for chars after terminator
     if (terminator[1] != '\0')
     {
         strcpy(output, "ERR SYNTAX Messaggio non valido\n");
@@ -40,6 +41,7 @@ upo_protocol_response_t upo_protocol(upo_store_t store, const char *input, char 
 
     char *endptr = NULL;
     uint64_t size = strtoul(token, &endptr, 10);
+    // Check for valid size
     if (is_invalid_number(token, size, endptr))
     {
         strcpy(output, "ERR SYNTAX Numero non valido\n");
@@ -47,14 +49,17 @@ upo_protocol_response_t upo_protocol(upo_store_t store, const char *input, char 
     }
 
     token = strtok(NULL, delim);
+    // Check for "0\n" message
     if (size == 0 && token == NULL)
     {
         size_t store_size = upo_store_size(store);
+        // Check for no data
         if (store_size == 0)
         {
             strcpy(output, "ERR STATS Non posso calcolare la media di nessun campione\n");
             return ERR_STATS;
         }
+        // Check for single data
         if (store_size == 1)
         {
             strcpy(output, "ERR STATS Non posso calcolare la varianza di 1 campione\n");
@@ -66,15 +71,18 @@ upo_protocol_response_t upo_protocol(upo_store_t store, const char *input, char 
 
     uint64_t counter = 0;
     uint64_t numbers[size];
+    // Check for the data numbers
     while (token != NULL)
     {
         errno = 0;
         uint64_t data = strtoul(token, &endptr, 10);
+        // Check for valid number
         if (is_invalid_number(token, data, endptr))
         {
             strcpy(output, "ERR SYNTAX Numero non valido\n");
             return ERR_SYNTAX;
         }
+        // Check for the right number of data
         if (counter == size)
         {
             strcpy(output, "ERR DATA Il numero di dati immessi è maggiore della dimensione dichiarata\n");
@@ -85,15 +93,22 @@ upo_protocol_response_t upo_protocol(upo_store_t store, const char *input, char 
         counter++;
     }
 
+    // Check for the right number of data
     if (counter < size)
     {
         strcpy(output, "ERR DATA Il numero di dati immessi è minore della dimensione dichiarata\n");
         return ERR_DATA;
     }
 
+    // Store, if any, the correct data
     for (uint64_t i = 0; i < size; i++)
         upo_store_insert(store, numbers[i]);
 
     snprintf(output, UPO_PROTOCOL_MAX, "OK DATA %" PRIu64 "\n", size);
     return OK_DATA;
+}
+
+bool is_invalid_number(char *str, uint64_t number, char *endptr)
+{
+    return str == endptr || errno != 0 || number == ULONG_MAX || (errno == 0 && str && *endptr != 0);
 }
