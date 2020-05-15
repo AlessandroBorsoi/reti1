@@ -50,7 +50,7 @@ bool upo_protocol_splitter_is_valid(upo_protocol_splitter_t splitter)
     return false;
 }
 
-void upo_protocol_splitter_next(upo_protocol_splitter_t splitter, char *output, size_t output_size)
+size_t upo_protocol_splitter_next(upo_protocol_splitter_t splitter, char *output, size_t output_size)
 {
     memset(output, '\0', output_size);
     size_t to_send = numbers_to_send(splitter, output_size);
@@ -58,7 +58,7 @@ void upo_protocol_splitter_next(upo_protocol_splitter_t splitter, char *output, 
     if (to_send == 0)
     {
         strcpy(output, "0\n");
-        return;
+        return 0;
     }
     index += sprintf(&output[index], "%zu ", to_send);
     size_t start = splitter->current;
@@ -69,6 +69,7 @@ void upo_protocol_splitter_next(upo_protocol_splitter_t splitter, char *output, 
         else
             index += sprintf(&output[index], "%llu ", splitter->numbers[i]);
     splitter->current = end;
+    return to_send;
 }
 
 int get_number_count(const char *input, int file_size)

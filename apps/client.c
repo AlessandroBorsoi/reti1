@@ -10,6 +10,30 @@
 #include <upo/protocol.h>
 #include <upo/splitter.h>
 
+typedef struct ok_stats_s
+{
+    int total;
+    double mean;
+    double variance;
+} ok_stats_t;
+
+ok_stats_t get_stats(char *response)
+{
+    ok_stats_t stats = {0, 0, 0};
+    char *delim = " \n";
+    char copy[UPO_PROTOCOL_MAX];
+    strcpy(copy, response);
+    char *status = strtok(copy, delim);
+    char *type = strtok(NULL, delim);
+    if (strcmp(status, "OK") == 0 && strcmp(type, "STATS") == 0)
+    {
+        stats.total = atoi(strtok(NULL, delim));
+        stats.mean = atof(strtok(NULL, delim));
+        stats.variance = atof(strtok(NULL, delim));
+    }
+    return stats;
+}
+
 upo_protocol_response_t parse(char *input)
 {
     char delim[] = " \n";
@@ -39,6 +63,25 @@ upo_protocol_response_t parse(char *input)
     return INVALID;
 }
 
+int trim_response(upo_protocol_response_t response)
+{
+    switch (response)
+    {
+    case OK_DATA:
+        return 8;
+    case OK_START:
+    case OK_STATS:
+    case ERR_DATA:
+        return 9;
+    case ERR_STATS:
+        return 10;
+    case ERR_SYNTAX:
+        return 11;
+    default:
+        return 0;
+    }
+}
+
 void program(int socket)
 {
     char delim[] = " \n";
@@ -46,6 +89,7 @@ void program(int socket)
     char client[UPO_PROTOCOL_MAX];
     char output[UPO_PROTOCOL_MAX];
     upo_protocol_splitter_t splitter;
+    size_t sent = 0;
 
     while (1)
     {
@@ -57,7 +101,7 @@ void program(int socket)
         switch (response)
         {
         case OK_START:
-            printf("%s", &input[9]);
+            printf("%s", &input[trim_response(response)]);
             printf("Lo scopo di questo programma è inviare al server una sequenza di numeri interi positivi\n");
             printf("in modo che vengano restituiti i valori di media e varianza campionaria.\n");
             printf("Per inviare i valori occorre digitare il percorso (assoluto o relativo) di un file di testo\n");
@@ -95,35 +139,36 @@ void program(int socket)
                     continue;
                 }
             } while (error);
-            upo_protocol_splitter_next(splitter, output, UPO_PROTOCOL_MAX);
+            sent = upo_protocol_splitter_next(splitter, output, UPO_PROTOCOL_MAX);
             write(socket, output, sizeof(output));
             break;
         case OK_DATA:
-            upo_protocol_splitter_next(splitter, output, UPO_PROTOCOL_MAX);
-            printf("%s", &input[8]);
+            sent = upo_protocol_splitter_next(splitter, output, UPO_PROTOCOL_MAX);
             write(socket, output, sizeof(output));
             break;
         case OK_STATS:
-            printf("TODO: Pretty print dei risultati\n");
-            printf("%s", &input[9]);
+        {
+            ok_stats_t stats = get_stats(input);
+            printf("Sono stati inviati al server un totale di %d dati\n", stats.total);
+            printf("La media campionaria calcolata è: %.2f\n", stats.mean);
+            printf("La varianza campionaria calcolata è: %.2f\n", stats.variance);
             return;
+        }
         case ERR_DATA:
             printf("Errore dati da parte del server:\n");
-            printf("%s", &input[9]);
+            printf("%s", &input[trim_response(response)]);
             return;
         case ERR_STATS:
             printf("Errore di calcolo statistiche da parte del server:\n");
-            printf("%s", &input[10]);
+            printf("%s", &input[trim_response(response)]);
             return;
         case ERR_SYNTAX:
             printf("Errore di sintassi da parte del server:\n");
-            printf("%s", &input[11]);
-            return;
-        case INVALID:
-            printf("Qualcosa è andato storto in maniera imprevista:\n");
-            printf("==%s||\n", input);
+            printf("%s", &input[trim_response(response)]);
             return;
         default:
+            printf("Qualcosa è andato storto in maniera imprevista:\n");
+            printf("%s\n", input);
             return;
         }
     }

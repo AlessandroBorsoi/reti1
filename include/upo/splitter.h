@@ -38,5 +38,7 @@ bool upo_protocol_splitter_is_valid(upo_protocol_splitter_t splitter);
  * \param splitter The splitter representing the numbers to send.
  * \param output The string in which store the result of the splitting.
  * \param output_size The dimention of the output string.
+ * 
+ * \return The number of the next data.
  */
-void upo_protocol_splitter_next(upo_protocol_splitter_t splitter, char *output, size_t output_size);
+size_t upo_protocol_splitter_next(upo_protocol_splitter_t splitter, char *output, size_t output_size);
