@@ -305,6 +305,16 @@ void test_err_data_less()
     assert(response == ERR_DATA);
 
     upo_store_destroy(&store);
+
+    store = upo_store_create();
+    char input2[] = "1\n";
+
+    response = upo_protocol(store, input2, output);
+
+    assert(strcmp(output, "ERR DATA Il numero di dati immessi è minore della dimensione dichiarata\n") == 0);
+    assert(response == ERR_DATA);
+
+    upo_store_destroy(&store);
 }
 
 /*

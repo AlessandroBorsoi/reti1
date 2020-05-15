@@ -1,7 +1,7 @@
 /**
  * \file upo/server/protocol.h
  *
- * \brief The network Protocol interface
+ * \brief The server network Protocol interface
  *
  * \author Alessandro Borsoi
  */

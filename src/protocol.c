@@ -7,7 +7,7 @@
 #include <inttypes.h>
 #include <upo/server/protocol.h>
 
-static bool is_valid_number(char *str, uint64_t number, char *endptr)
+static bool is_invalid_number(char *str, uint64_t number, char *endptr)
 {
     return str == endptr || errno != 0 || number == ULONG_MAX || (errno == 0 && str && *endptr != 0);
 }
@@ -20,7 +20,6 @@ upo_protocol_response_t upo_protocol(upo_store_t store, const char *input, char 
     strcpy(input_copy, input);
 
     char *token = strtok(input_copy, delim);
-
     if (token == NULL)
     {
         strcpy(output, "ERR SYNTAX Messaggio vuoto\n");
@@ -41,14 +40,14 @@ upo_protocol_response_t upo_protocol(upo_store_t store, const char *input, char 
 
     char *endptr = NULL;
     uint64_t size = strtoul(token, &endptr, 10);
-    if (is_valid_number(token, size, endptr))
+    if (is_invalid_number(token, size, endptr))
     {
         strcpy(output, "ERR SYNTAX Numero non valido\n");
         return ERR_SYNTAX;
     }
 
     token = strtok(NULL, delim);
-    if (token == NULL)
+    if (size == 0 && token == NULL)
     {
         size_t store_size = upo_store_size(store);
         if (store_size == 0)
@@ -71,7 +70,7 @@ upo_protocol_response_t upo_protocol(upo_store_t store, const char *input, char 
     {
         errno = 0;
         uint64_t data = strtoul(token, &endptr, 10);
-        if (is_valid_number(token, data, endptr))
+        if (is_invalid_number(token, data, endptr))
         {
             strcpy(output, "ERR SYNTAX Numero non valido\n");
             return ERR_SYNTAX;
@@ -95,6 +94,6 @@ upo_protocol_response_t upo_protocol(upo_store_t store, const char *input, char 
     for (uint64_t i = 0; i < size; i++)
         upo_store_insert(store, numbers[i]);
 
-    snprintf(output, UPO_PROTOCOL_MAX, "OK DATA %"PRIu64"\n", size);
+    snprintf(output, UPO_PROTOCOL_MAX, "OK DATA %" PRIu64 "\n", size);
     return OK_DATA;
 }
