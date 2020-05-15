@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <upo/protocol.h>
+#include <upo/server/protocol.h>
 
 const char WELCOME[] = "OK START Benvenuto, mandami i tuoi dati\n";
 

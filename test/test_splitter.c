@@ -2,7 +2,7 @@
 #include <assert.h>
 #include <string.h>
 #include <unistd.h>
-#include <upo/splitter.h>
+#include <upo/client/splitter.h>
 
 char resource[512];
 static void test_create_destroy(const char *arg0);

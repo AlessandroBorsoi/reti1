@@ -1,6 +1,6 @@
 #pragma once
 
-#include <upo/store.h>
+#include <upo/server/store.h>
 
 struct upo_store_node_s
 {

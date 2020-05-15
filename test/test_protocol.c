@@ -1,7 +1,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
-#include <upo/protocol.h>
+#include <upo/server/protocol.h>
 
 static void test_err_syntax_rc_message();
 static void test_err_syntax_empty_message();

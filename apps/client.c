@@ -7,8 +7,7 @@
 #include <stdbool.h>
 #include <ctype.h>
 #include <arpa/inet.h>
-#include <upo/protocol.h>
-#include <upo/splitter.h>
+#include <upo/client/splitter.h>
 
 typedef struct ok_stats_s
 {
@@ -17,7 +16,7 @@ typedef struct ok_stats_s
     double variance;
 } ok_stats_t;
 
-ok_stats_t get_stats(char *response)
+ok_stats_t get_ok_stats(char *response)
 {
     ok_stats_t stats = {0, 0, 0};
     char *delim = " \n";
@@ -32,6 +31,18 @@ ok_stats_t get_stats(char *response)
         stats.variance = atof(strtok(NULL, delim));
     }
     return stats;
+}
+
+int get_ok_data(char *response)
+{
+    char *delim = " \n";
+    char copy[UPO_PROTOCOL_MAX];
+    strcpy(copy, response);
+    char *status = strtok(copy, delim);
+    char *type = strtok(NULL, delim);
+    if (strcmp(status, "OK") == 0 && strcmp(type, "DATA") == 0)
+        return atoi(strtok(NULL, delim));
+    return -1;
 }
 
 upo_protocol_response_t parse(char *input)
@@ -86,15 +97,14 @@ void program(int socket)
 {
     char delim[] = " \n";
     char input[UPO_PROTOCOL_MAX];
-    char client[UPO_PROTOCOL_MAX];
     char output[UPO_PROTOCOL_MAX];
     upo_protocol_splitter_t splitter;
     size_t sent = 0;
 
-    while (1)
+    bool end = false;
+    while (!end)
     {
         memset(input, '\0', UPO_PROTOCOL_MAX);
-        memset(client, '\0', UPO_PROTOCOL_MAX);
         memset(output, '\0', UPO_PROTOCOL_MAX);
         read(socket, input, sizeof(input));
         upo_protocol_response_t response = parse(input);
@@ -111,8 +121,10 @@ void program(int socket)
             printf("Per uscire dal programma senza inviare nulla digitare q.\n");
             printf("\n");
             int error;
+            char client[UPO_PROTOCOL_MAX];
             do
             {
+                memset(client, '\0', UPO_PROTOCOL_MAX);
                 error = 0;
                 int n = 0;
                 while ((client[n++] = getchar()) != '\n')
@@ -126,7 +138,6 @@ void program(int socket)
                 }
 
                 splitter = upo_protocol_splitter_create(client_input);
-
                 if (splitter == NULL)
                 {
                     printf("Impossibile accedere al file\n");
@@ -145,35 +156,51 @@ void program(int socket)
             write(socket, output, sizeof(output));
             break;
         case OK_DATA:
-            sent = upo_protocol_splitter_next(splitter, output, UPO_PROTOCOL_MAX);
+        {
+            size_t received = get_ok_data(input);
+            if (sent != received)
+            {
+                printf("Si è verificata una discrepanza tra il numero di dati inviati (%zu) e il numero di dati ricevuti dal server (%zu)\n", sent, received);
+                strcpy(output, "0\n");
+            }
+            else
+            {
+                sent = upo_protocol_splitter_next(splitter, output, UPO_PROTOCOL_MAX);
+            }
             write(socket, output, sizeof(output));
             break;
+        }
         case OK_STATS:
         {
-            ok_stats_t stats = get_stats(input);
+            ok_stats_t stats = get_ok_stats(input);
             printf("\n");
             printf("Sono stati inviati al server dati per un totale di: %d\n", stats.total);
             printf("La media campionaria calcolata è: %.2f\n", stats.mean);
             printf("La varianza campionaria calcolata è: %.2f\n", stats.variance);
             printf("\n");
-            return;
+            end = true;
+            break;
         }
         case ERR_DATA:
             printf("Errore dati da parte del server:\n");
             printf("%s", &input[trim_response(response)]);
-            return;
+            end = true;
+            break;
         case ERR_STATS:
             printf("Errore di calcolo statistiche da parte del server:\n");
             printf("%s", &input[trim_response(response)]);
-            return;
+            end = true;
+            break;
         case ERR_SYNTAX:
             printf("Errore di sintassi da parte del server:\n");
             printf("%s", &input[trim_response(response)]);
-            return;
+            end = true;
+            break;
         default:
             printf("Qualcosa è andato storto in maniera imprevista:\n");
             printf("%s\n", input);
-            return;
+            end = true;
+            break;
         }
     }
     upo_protocol_splitter_destroy(&splitter);

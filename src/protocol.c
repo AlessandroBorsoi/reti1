@@ -5,7 +5,7 @@
 #include <limits.h>
 #include <stdbool.h>
 #include <inttypes.h>
-#include <upo/protocol.h>
+#include <upo/server/protocol.h>
 
 static bool is_valid_number(char *str, uint64_t number, char *endptr)
 {

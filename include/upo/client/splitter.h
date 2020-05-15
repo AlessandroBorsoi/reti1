@@ -1,8 +1,16 @@
+/**
+ * \file upo/client/splitter.h
+ *
+ * \brief The client network Protocol utility
+ *
+ * \author Alessandro Borsoi
+ */
 #pragma once
 
 #include <stddef.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <upo/protocol.h>
 
 /** \brief Declares the Splitter type. */
 typedef struct upo_protocol_splitter_s *upo_protocol_splitter_t;

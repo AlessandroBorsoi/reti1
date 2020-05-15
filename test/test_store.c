@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdbool.h>
-#include <upo/store.h>
+#include <upo/server/store.h>
 
 #define EPSILON 0.00001
 

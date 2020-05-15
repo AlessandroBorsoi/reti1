@@ -1,6 +1,6 @@
 #pragma once
 
-#include <upo/splitter.h>
+#include <upo/client/splitter.h>
 
 struct upo_protocol_splitter_s
 {
