@@ -58,7 +58,12 @@ void program(int socket)
         {
         case OK_START:
             printf("%s", &input[9]);
-            printf("=====\nTODO: Descrizione delle modalità di utilizzo\n('q' per uscire o path di un file di numeri separati da spazi da mandare al server)\n=====\n");
+            printf("Lo scopo di questo programma è inviare al server una sequenza di numeri interi positivi\n");
+            printf("in modo che vengano restituiti i valori di media e varianza campionaria.\n");
+            printf("Per inviare i valori occorre digitare il percorso (assoluto o relativo) di un file di testo\n");
+            printf("contenente la sequenza di numeri separata da caratteri bianchi (spazi, a capo, tab...).\n");
+            printf("Ad esempio digitare (senza virgolette): 'data/example.txt'.\n");
+            printf("Per uscire dal programma senza inviare nulla digitare q.\n");
             int error;
             do
             {
