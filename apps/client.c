@@ -102,12 +102,14 @@ void program(int socket)
         {
         case OK_START:
             printf("%s", &input[trim_response(response)]);
+            printf("\n");
             printf("Lo scopo di questo programma è inviare al server una sequenza di numeri interi positivi\n");
-            printf("in modo che vengano restituiti i valori di media e varianza campionaria.\n");
+            printf("in modo che vengano restituiti i valori di media e varianza campionaria calcolati sull'insieme.\n");
             printf("Per inviare i valori occorre digitare il percorso (assoluto o relativo) di un file di testo\n");
             printf("contenente la sequenza di numeri separata da caratteri bianchi (spazi, a capo, tab...).\n");
             printf("Ad esempio digitare (senza virgolette): 'data/example.txt'.\n");
             printf("Per uscire dal programma senza inviare nulla digitare q.\n");
+            printf("\n");
             int error;
             do
             {
@@ -134,7 +136,7 @@ void program(int socket)
 
                 if (!upo_protocol_splitter_is_valid(splitter))
                 {
-                    printf("Il file contiene dati non corretti. Sono ammessi solo numeri interi positivi separati da spazi\n");
+                    printf("Il file contiene dati non corretti. Sono ammessi solo numeri interi positivi separati da caratteri bianchi (spazi, a capo, tab...)\n");
                     error = 1;
                     continue;
                 }
@@ -149,9 +151,11 @@ void program(int socket)
         case OK_STATS:
         {
             ok_stats_t stats = get_stats(input);
-            printf("Sono stati inviati al server un totale di %d dati\n", stats.total);
+            printf("\n");
+            printf("Sono stati inviati al server dati per un totale di: %d\n", stats.total);
             printf("La media campionaria calcolata è: %.2f\n", stats.mean);
             printf("La varianza campionaria calcolata è: %.2f\n", stats.variance);
+            printf("\n");
             return;
         }
         case ERR_DATA:

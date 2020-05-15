@@ -127,7 +127,7 @@ void test_next_with_big_example_txt(const char *arg0)
 
     upo_protocol_splitter_destroy(&splitter);
 
-    clean_file(resource);
+    //clean_file(resource);
 }
 
 void test_next_test_txt(const char *arg0)
