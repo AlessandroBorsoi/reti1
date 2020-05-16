@@ -102,7 +102,7 @@ void test_next_with_example_txt(const char *arg0)
 
 void test_next_with_big_example_txt(const char *arg0)
 {
-    get_resource("../data/big_example.txt", arg0, resource);
+    get_resource("../data/big_test.txt", arg0, resource);
 
     populate_file(resource);
 
