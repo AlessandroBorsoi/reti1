@@ -4,10 +4,11 @@
 #include <ctype.h>
 #include <string.h>
 
+static upo_protocol_splitter_t create(char *input, int file_size);
 static bool is_valid_input(const char *input);
 static int get_number_count(const char *input, int file_size);
-static upo_protocol_splitter_t create(char *input, int file_size);
 static size_t numbers_to_send(const upo_protocol_splitter_t splitter, const size_t output_size);
+static int digits(uint64_t n);
 
 upo_protocol_splitter_t upo_protocol_splitter_create(char *file_path)
 {
@@ -72,21 +73,6 @@ size_t upo_protocol_splitter_next(upo_protocol_splitter_t splitter, char *output
     return to_send;
 }
 
-int get_number_count(const char *input, int file_size)
-{
-    int count = 0;
-    for (int i = 0; i < file_size; i++)
-    {
-        if (isdigit(input[i]))
-        {
-            count++;
-            while (isdigit(input[i]))
-                i++;
-        }
-    }
-    return count;
-}
-
 upo_protocol_splitter_t create(char *input, int file_size)
 {
     upo_protocol_splitter_t splitter = malloc(sizeof(struct upo_protocol_splitter_s));
@@ -112,17 +98,6 @@ upo_protocol_splitter_t create(char *input, int file_size)
     return splitter;
 }
 
-int digits(uint64_t n)
-{
-    int digits = 1;
-    while (n > 9)
-    {
-        n /= 10;
-        digits++;
-    }
-    return digits;
-}
-
 size_t numbers_to_send(const upo_protocol_splitter_t splitter, const size_t output_size)
 {
     size_t to_send = 0;
@@ -141,10 +116,36 @@ size_t numbers_to_send(const upo_protocol_splitter_t splitter, const size_t outp
     return buffer_size + digits(to_send) + 1 > output_size ? to_send - 1 : to_send;
 }
 
+int get_number_count(const char *input, int file_size)
+{
+    int count = 0;
+    for (int i = 0; i < file_size; i++)
+    {
+        if (isdigit(input[i]))
+        {
+            count++;
+            while (isdigit(input[i]))
+                i++;
+        }
+    }
+    return count;
+}
+
 bool is_valid_input(const char *input)
 {
     for (int i = 0; input[i] != '\0'; i++)
         if (!isdigit(input[i]) && !isspace(input[i]))
             return false;
     return true;
+}
+
+int digits(uint64_t n)
+{
+    int digits = 1;
+    while (n > 9)
+    {
+        n /= 10;
+        digits++;
+    }
+    return digits;
 }

@@ -93,13 +93,34 @@ int trim_response(upo_protocol_response_t response)
     }
 }
 
+const char *to_string(upo_protocol_response_t response)
+{
+    switch (response)
+    {
+    case OK_START:
+        return "OK START";
+    case OK_DATA:
+        return "OK DATA";
+    case OK_STATS:
+        return "OK STATS";
+    case ERR_SYNTAX:
+        return "ERR SYNTAX";
+    case ERR_DATA:
+        return "ERR DATA";
+    case ERR_STATS:
+        return "ERR STATS";
+    default:
+        return "INVALID";
+    }
+}
+
 bool client_input(upo_protocol_splitter_t *splitter)
 {
     printf("\n");
     printf("Lo scopo di questo programma è inviare al server una sequenza di numeri interi positivi\n");
     printf("in modo che vengano restituiti i valori di media e varianza campionaria calcolati sull'insieme.\n");
     printf("Per inviare i valori occorre digitare il percorso (assoluto o relativo) di un file di testo\n");
-    printf("contenente la sequenza di numeri separata da caratteri bianchi (spazi, a capo, tab...).\n");
+    printf("contenente la sequenza di numeri separata da spazi.\n");
     printf("Ad esempio digitare (senza virgolette): 'data/example.txt'.\n");
     printf("Per uscire dal programma senza inviare nulla digitare q.\n");
     printf("\n");
@@ -137,7 +158,7 @@ bool client_input(upo_protocol_splitter_t *splitter)
 
         if (!upo_protocol_splitter_is_valid(*splitter))
         {
-            printf("Il file contiene dati non corretti. Sono ammessi solo numeri interi positivi separati da caratteri bianchi (spazi, a capo, tab...)\n");
+            printf("Il file contiene dati non corretti. Sono ammessi solo numeri interi positivi separati da spazi\n");
             error = 1;
             continue;
         }
@@ -165,10 +186,12 @@ void program(int socket)
     while (!end)
     {
         size_t sent = upo_protocol_splitter_next(splitter, output, UPO_PROTOCOL_MAX);
+        
         write(socket, output, sizeof(output));
         memset(output, '\0', UPO_PROTOCOL_MAX);
         memset(input, '\0', UPO_PROTOCOL_MAX);
         read(socket, input, sizeof(input));
+
         upo_protocol_response_t response = parse(input);
         if (response == OK_DATA)
         {
@@ -191,7 +214,7 @@ void program(int socket)
         }
         else
         {
-            printf("Errore di tipo %u da parte del server:\n", response); // TODO: convert enum number to text
+            printf("Errore di tipo %s da parte del server:\n", to_string(response));
             printf("%s", &input[trim_response(response)]);
             printf("\n");
             end = true;
