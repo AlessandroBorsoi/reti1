@@ -11,3 +11,9 @@ From the propject root:
 - run `make clean` to clean all generated files in all the directories.
 
 - run `./test/test_<test name>` to run the unit test for the specific library created.
+
+## pdf
+```relazione.pdf``` is generated from ```relazione.md``` using [Pandoc](https://pandoc.org/) with:
+```bash
+pandoc -s -o relazione.pdf relazione.md -V geometry:margin=1in
+```
