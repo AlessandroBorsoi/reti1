@@ -93,69 +93,84 @@ int trim_response(upo_protocol_response_t response)
     }
 }
 
+bool client_input(upo_protocol_splitter_t *splitter)
+{
+    printf("\n");
+    printf("Lo scopo di questo programma è inviare al server una sequenza di numeri interi positivi\n");
+    printf("in modo che vengano restituiti i valori di media e varianza campionaria calcolati sull'insieme.\n");
+    printf("Per inviare i valori occorre digitare il percorso (assoluto o relativo) di un file di testo\n");
+    printf("contenente la sequenza di numeri separata da caratteri bianchi (spazi, a capo, tab...).\n");
+    printf("Ad esempio digitare (senza virgolette): 'data/example.txt'.\n");
+    printf("Per uscire dal programma senza inviare nulla digitare q.\n");
+    printf("\n");
+
+    int error;
+    char delim[] = " \n";
+    char client[UPO_PROTOCOL_MAX];
+    do
+    {
+        memset(client, '\0', UPO_PROTOCOL_MAX);
+        error = 0;
+        int n = 0;
+        while ((client[n++] = getchar()) != '\n')
+            ;
+
+        char *client_input = strtok(client, delim);
+        if (client_input == NULL)
+        {
+            error = 1;
+            continue;
+        }
+        if (strcmp(client_input, "q") == 0)
+        {
+            printf("Arrivederci\n");
+            return true;
+        }
+
+        *splitter = upo_protocol_splitter_create(client_input);
+        if (*splitter == NULL)
+        {
+            printf("Impossibile accedere al file\n");
+            error = 1;
+            continue;
+        }
+
+        if (!upo_protocol_splitter_is_valid(*splitter))
+        {
+            printf("Il file contiene dati non corretti. Sono ammessi solo numeri interi positivi separati da caratteri bianchi (spazi, a capo, tab...)\n");
+            error = 1;
+            continue;
+        }
+    } while (error);
+    return false;
+}
+
 void program(int socket)
 {
-    char delim[] = " \n";
-    char input[UPO_PROTOCOL_MAX];
-    char output[UPO_PROTOCOL_MAX];
-    upo_protocol_splitter_t splitter;
-    size_t sent = 0;
+    char input[UPO_PROTOCOL_MAX] = {0};
+    char output[UPO_PROTOCOL_MAX] = {0};
 
-    bool end = false;
+    read(socket, input, sizeof(input));
+    upo_protocol_response_t response = parse(input);
+    if (response != OK_START)
+    {
+        printf("Il server non risponde correttamente\n");
+        return;
+    }
+
+    printf("%s", &input[trim_response(response)]);
+    upo_protocol_splitter_t splitter = NULL;
+    bool end = client_input(&splitter);
+
     while (!end)
     {
-        memset(input, '\0', UPO_PROTOCOL_MAX);
+        size_t sent = upo_protocol_splitter_next(splitter, output, UPO_PROTOCOL_MAX);
+        write(socket, output, sizeof(output));
         memset(output, '\0', UPO_PROTOCOL_MAX);
+        memset(input, '\0', UPO_PROTOCOL_MAX);
         read(socket, input, sizeof(input));
         upo_protocol_response_t response = parse(input);
-        switch (response)
-        {
-        case OK_START:
-            printf("%s", &input[trim_response(response)]);
-            printf("\n");
-            printf("Lo scopo di questo programma è inviare al server una sequenza di numeri interi positivi\n");
-            printf("in modo che vengano restituiti i valori di media e varianza campionaria calcolati sull'insieme.\n");
-            printf("Per inviare i valori occorre digitare il percorso (assoluto o relativo) di un file di testo\n");
-            printf("contenente la sequenza di numeri separata da caratteri bianchi (spazi, a capo, tab...).\n");
-            printf("Ad esempio digitare (senza virgolette): 'data/example.txt'.\n");
-            printf("Per uscire dal programma senza inviare nulla digitare q.\n");
-            printf("\n");
-            int error;
-            char client[UPO_PROTOCOL_MAX];
-            do
-            {
-                memset(client, '\0', UPO_PROTOCOL_MAX);
-                error = 0;
-                int n = 0;
-                while ((client[n++] = getchar()) != '\n')
-                    ;
-
-                char *client_input = strtok(client, delim);
-                if (strcmp(client_input, "q") == 0)
-                {
-                    printf("Arrivederci\n");
-                    return;
-                }
-
-                splitter = upo_protocol_splitter_create(client_input);
-                if (splitter == NULL)
-                {
-                    printf("Impossibile accedere al file\n");
-                    error = 1;
-                    continue;
-                }
-
-                if (!upo_protocol_splitter_is_valid(splitter))
-                {
-                    printf("Il file contiene dati non corretti. Sono ammessi solo numeri interi positivi separati da caratteri bianchi (spazi, a capo, tab...)\n");
-                    error = 1;
-                    continue;
-                }
-            } while (error);
-            sent = upo_protocol_splitter_next(splitter, output, UPO_PROTOCOL_MAX);
-            write(socket, output, sizeof(output));
-            break;
-        case OK_DATA:
+        if (response == OK_DATA)
         {
             size_t received = get_ok_data(input);
             if (sent != received)
@@ -163,14 +178,8 @@ void program(int socket)
                 printf("Si è verificata una discrepanza tra il numero di dati inviati (%zu) e il numero di dati ricevuti dal server (%zu)\n", sent, received);
                 strcpy(output, "0\n");
             }
-            else
-            {
-                sent = upo_protocol_splitter_next(splitter, output, UPO_PROTOCOL_MAX);
-            }
-            write(socket, output, sizeof(output));
-            break;
         }
-        case OK_STATS:
+        else if (response == OK_STATS)
         {
             ok_stats_t stats = get_ok_stats(input);
             printf("\n");
@@ -179,28 +188,13 @@ void program(int socket)
             printf("La varianza campionaria calcolata è: %.2f\n", stats.variance);
             printf("\n");
             end = true;
-            break;
         }
-        case ERR_DATA:
-            printf("Errore dati da parte del server:\n");
+        else
+        {
+            printf("Errore di tipo %u da parte del server:\n", response); // TODO: convert enum number to text
             printf("%s", &input[trim_response(response)]);
+            printf("\n");
             end = true;
-            break;
-        case ERR_STATS:
-            printf("Errore di calcolo statistiche da parte del server:\n");
-            printf("%s", &input[trim_response(response)]);
-            end = true;
-            break;
-        case ERR_SYNTAX:
-            printf("Errore di sintassi da parte del server:\n");
-            printf("%s", &input[trim_response(response)]);
-            end = true;
-            break;
-        default:
-            printf("Qualcosa è andato storto in maniera imprevista:\n");
-            printf("%s\n", input);
-            end = true;
-            break;
         }
     }
     upo_protocol_splitter_destroy(&splitter);
