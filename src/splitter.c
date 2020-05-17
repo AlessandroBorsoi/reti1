@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
+#include <inttypes.h>
 
 static upo_protocol_splitter_t create(char *input, int file_size);
 static bool is_valid_input(const char *input);
@@ -66,9 +67,9 @@ size_t upo_protocol_splitter_next(upo_protocol_splitter_t splitter, char *output
     size_t end = start + to_send;
     for (size_t i = start; i < end; i++)
         if (i == end - 1)
-            index += sprintf(&output[index], "%llu\n", splitter->numbers[i]);
+            index += sprintf(&output[index], "%" PRIu64 "\n", splitter->numbers[i]);
         else
-            index += sprintf(&output[index], "%llu ", splitter->numbers[i]);
+            index += sprintf(&output[index], "%" PRIu64 " ", splitter->numbers[i]);
     splitter->current = end;
     return to_send;
 }
