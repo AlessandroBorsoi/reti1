@@ -182,6 +182,6 @@ void populate_file(char *resource)
 void clean_file(char *resource)
 {
     FILE *fptr = fopen(resource, "w");
-    fprintf(fptr, "");
+    fprintf(fptr, " ");
     fclose(fptr);
 }
