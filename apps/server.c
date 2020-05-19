@@ -18,9 +18,9 @@ void program(int socket)
     {
         memset(input, '\0', UPO_PROTOCOL_MAX + 1);
         memset(output, '\0', UPO_PROTOCOL_MAX);
-        read(socket, input, sizeof(input) - 1);
+        read(socket, input, UPO_PROTOCOL_MAX);
         upo_protocol_response_t response = upo_protocol(store, input, output);
-        write(socket, output, sizeof(output));
+        write(socket, output, UPO_PROTOCOL_MAX);
         if (response != OK_DATA)
             break;
     }
