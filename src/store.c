@@ -10,8 +10,9 @@ upo_store_t upo_store_create()
         fprintf(stderr, "Unable to create a store!\n");
         abort();
     }
-    store->top = NULL;
     store->size = 0;
+    store->sum = 0;
+    store->pow = 0;
     return store;
 }
 
@@ -19,12 +20,6 @@ void upo_store_destroy(upo_store_t *store)
 {
     if (store != NULL && *store != NULL)
     {
-        while ((*store)->top != NULL)
-        {
-            upo_store_node_t *node = (*store)->top;
-            (*store)->top = (*store)->top->next;
-            free(node);
-        }
         free(*store);
         *store = NULL;
     }
@@ -32,60 +27,37 @@ void upo_store_destroy(upo_store_t *store)
 
 void upo_store_insert(upo_store_t store, uint64_t number)
 {
-    upo_store_node_t *newNode;
     if (store == NULL)
         store = upo_store_create();
-    newNode = malloc(sizeof(struct upo_store_node_s));
-    if (newNode == NULL)
-    {
-        fprintf(stderr, "Unable to insert the element!\n");
-        abort();
-    }
-    newNode->number = number;
-    newNode->next = store->top;
-    store->top = newNode;
     store->size++;
+    store->sum += number;
+    store->pow += number * number;
 }
 
 uint64_t upo_store_size(const upo_store_t store)
 {
-    if (store == NULL || store->top == NULL)
+    if (store == NULL)
         return 0;
     return store->size;
 }
 
 double upo_store_sample_mean(const upo_store_t store)
 {
-    if (upo_store_size(store) == 0)
+    size_t size = upo_store_size(store);
+    if (size == 0)
         return -1;
     else
-    {
-        uint64_t sum = 0;
-        upo_store_node_t *node = store->top;
-        while (node != NULL)
-        {
-            sum += node->number;
-            node = node->next;
-        }
-        return sum / (double)upo_store_size(store);
-    }
+        return store->sum / (double)size;
 }
 
 double upo_store_sample_variance(const upo_store_t store)
 {
-    if (upo_store_size(store) < 2)
+    size_t size = upo_store_size(store);
+    if (size < 2)
         return -1;
     else
     {
-        double sm = upo_store_sample_mean(store);
-        double sum = 0;
-        upo_store_node_t *node = store->top;
-        while (node != NULL)
-        {
-            double diff = node->number - sm;
-            sum += diff * diff;
-            node = node->next;
-        }
-        return sum / (upo_store_size(store) - 1);
+        double mean = upo_store_sample_mean(store);
+        return (store->pow - size * mean * mean) / (size - 1);
     }
 }
