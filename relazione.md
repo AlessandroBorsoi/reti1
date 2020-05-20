@@ -17,7 +17,7 @@ Il progetto è stato sviluppato quasi interamente su un MacBook Pro con `gcc` e 
 Il progetto si compone di diverse directory, lasciando nella radice solo il Makefile generale. Come già accennato, `apps` contiene le due applicazioni client e server vere e proprie. Queste dipendono da librerie il cui header pubblico è contenuto nella cartella `include` (importata in fase di compilazione). All'interno di `include` si distinguono i componenti utilizzati dal client e dal server con un unico header comune `protocol.h` che definisce la dimensione dei messaggi del protocollo e gli stati possibili. Il codice sorgente di questi header è contenuto in `src`, compilato come libreria in `bin` e linkato staticamente. È stata fatta questa scelta per esporre una interfaccia facilmente testabile dei componenti di utilità per i due programmi principali. Questi componenti sono:
 
 - `store` usato dal server, astrae un generico repository per i numeri in ingresso ed espone il calcolo di media e varianza;
-- `protocol` implemeta di fatto le logiche di ricevimento e risposta lato server, con lo store come dipendenza. Questo facilita la testabilità riducendo la logica ad una funzione pura;
+- `protocol` implemeta di fatto le logiche di ricevimento e risposta lato server, con lo store come dipendenza;
 - `splitter` usato dal client, implementa la logica di partizionamento in più messaggi di una sequenza numerica (anche molto lunga) inserita dall'utente tramite file di testo.
 
 Tutte e tre le interfaccie espongono le funzione pubbliche usando `upo_` come prefisso per evitare eventuali collisioni di nomi.
@@ -53,4 +53,4 @@ void program(int socket)
 }
 ```
 
-Dopo la definizione delle strutture necessarie (lo store per il calcolo, e gli array per l'input dal client e l'output del server), viene stampato il messaggio di benvenuto. Si entra poi nel loop che continua solo nel caso di `OK_DATA`. La chiamata ad `upo_protocol` è di fatto una funzione pura che dato un input e lo store, scrive in output la risposta da inviare al client e ritorna il tipo di risposta per permettere il controllo dello stato. Uscendo dal ciclo vengono pulite le strutture non più necessarie e ci si rimette in attessa di un'altra richiesta.
+Dopo la definizione delle strutture necessarie (lo store per il calcolo, e gli array per l'input dal client e l'output del server), viene stampato il messaggio di benvenuto. Si entra poi nel loop che continua solo nel caso di `OK_DATA`. In `upo_protocol` è gestita la logica del protocollo dove, dato in ingresso lo store e il messaggio del client, viene scritto il messaggio in uscita e ritornato il tipo di risposta per permettere il controllo dello stato. Uscendo dal ciclo vengono pulite le strutture non più necessarie e ci si rimette in attessa di un'altra richiesta.
