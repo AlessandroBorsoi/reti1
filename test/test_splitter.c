@@ -9,9 +9,9 @@ static void test_create_destroy(const char *arg0);
 static void test_next_with_example_txt(const char *arg0);
 static void test_next_with_big_example_txt(const char *arg0);
 static void test_next_test_txt(const char *arg0);
-static void get_resource(char *resource, const char *argv0, char *buffer);
-static void populate_file(char *resource);
-static void clean_file(char *resource);
+static void get_resource(char *res, const char *argv0, char *buffer);
+static void populate_file(char *res);
+static void clean_file(char *res);
 
 int main(int argc, char const *argv[])
 {
@@ -148,7 +148,7 @@ void test_next_test_txt(const char *arg0)
     upo_protocol_splitter_destroy(&splitter);
 }
 
-void get_resource(char *resource, const char *argv0, char *buffer)
+void get_resource(char *res, const char *argv0, char *buffer)
 {
     memset(buffer, 0, 512);
     getcwd(buffer, 512);
@@ -168,20 +168,20 @@ void get_resource(char *resource, const char *argv0, char *buffer)
         token = strtok(NULL, "/");
     }
 
-    strcat(buffer, resource);
+    strcat(buffer, res);
 }
 
-void populate_file(char *resource)
+void populate_file(char *res)
 {
-    FILE *fptr = fopen(resource, "w");
+    FILE *fptr = fopen(res, "w");
     for (int i = 1; i <= 1000000; i++)
         fprintf(fptr, "%d ", i);
     fclose(fptr);
 }
 
-void clean_file(char *resource)
+void clean_file(char *res)
 {
-    FILE *fptr = fopen(resource, "w");
+    FILE *fptr = fopen(res, "w");
     fprintf(fptr, " ");
     fclose(fptr);
 }

@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <sys/types.h>
 #include <sys/socket.h>
 #include <stdlib.h>
 #include <string.h>
@@ -192,7 +191,7 @@ void program(int socket)
         memset(input, '\0', UPO_PROTOCOL_MAX);
         read(socket, input, sizeof(input));
 
-        upo_protocol_response_t response = parse(input);
+        response = parse(input);
         if (response == OK_DATA)
         {
             size_t received = get_ok_data(input);

@@ -7,7 +7,7 @@
 #include <inttypes.h>
 #include <upo/server/protocol.h>
 
-static bool is_invalid_number(char *str, uint64_t number, char *endptr);
+static bool is_invalid_number(const char *str, uint64_t number, const char *endptr);
 
 upo_protocol_response_t upo_protocol(upo_store_t store, const char *input, char *output)
 {
@@ -108,7 +108,7 @@ upo_protocol_response_t upo_protocol(upo_store_t store, const char *input, char 
     return OK_DATA;
 }
 
-bool is_invalid_number(char *str, uint64_t number, char *endptr)
+bool is_invalid_number(const char *str, uint64_t number, const char *endptr)
 {
     return str == endptr || errno != 0 || number == ULONG_MAX || (errno == 0 && str && *endptr != 0);
 }

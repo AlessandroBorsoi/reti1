@@ -86,8 +86,7 @@ int main(int argc, char *argv[])
         if (childSocket == -1)
         {
             fprintf(stderr, "Cannot accept connections!\n");
-            close(serverSocket);
-            exit(1);
+            break;
         }
 
         program(childSocket);
