@@ -13,4 +13,4 @@ include mk/*.mk
 all: $(test_targets)
 
 clean:
-	$(RM) $(test_targets) *.o
+	$(RM) -rf $(test_targets) *.o *.dSYM
